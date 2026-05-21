@@ -14,7 +14,7 @@
 
 .sys-banner {
   display: grid;
-  grid-template-columns: 88px 1fr auto;
+  grid-template-columns: 44px 1fr 1fr auto auto auto;
   align-items: center;
   height: var(--jp-menu-h);
   padding: 0 12px;
@@ -24,6 +24,46 @@
   font-size: var(--jp-font-sm);
   font-weight: 700;
   color: var(--jp-irix-text);
+  gap: 12px;
+}
+
+.sys-banner__metrics {
+  font-size: var(--jp-font-sm);
+  color: var(--jp-term-cursor);
+  font-family: var(--jp-font-mono);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.sys-banner__clock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--jp-font-mono);
+  color: var(--jp-term-cursor);
+  white-space: nowrap;
+  padding: 4px 8px;
+  background: var(--jp-term-inset-bg);
+  border-top: 2px solid var(--jp-irix-bevel-dark);
+  border-left: 2px solid var(--jp-irix-bevel-dark);
+  border-right: 2px solid var(--jp-irix-bevel-light);
+  border-bottom: 2px solid var(--jp-irix-bevel-light);
+}
+
+.sys-banner__clock-icon {
+  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+}
+
+.sys-banner__clock-time {
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.sys-banner__clock-tz {
+  font-size: 0.9em;
+  opacity: 0.9;
 }
 
 .sys-banner__state {

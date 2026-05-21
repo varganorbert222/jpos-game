@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { WindowManagerService } from '../../window-manager/window-manager.service';
 
-export type DockApp = 'security' | 'power' | 'dino' | 'terminal';
+export type DockApp = 'security' | 'power' | 'dino' | 'terminal' | 'weather';
 
 @Component({
   selector: 'app-dock',
@@ -19,6 +19,7 @@ export class DockComponent {
     { id: 'power', label: 'POWER GRID' },
     { id: 'dino', label: 'DINO MON' },
     { id: 'terminal', label: 'TERMINAL' },
+    { id: 'weather', label: 'WEATHER' },
   ];
 
   open(app: DockApp): void {

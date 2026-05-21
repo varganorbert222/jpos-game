@@ -8,7 +8,8 @@ export type OsIconName =
   | 'warning'
   | 'sensor'
   | 'module'
-  | 'dinosaur';
+  | 'dinosaur'
+  | 'weather';
 
 /** Chunky 16×16 pixel icons — scaled up for visibility */
 @Component({
@@ -26,12 +27,28 @@ export type OsIconName =
       @switch (name()) {
         @case ('security') {
           <rect x="0" y="0" width="16" height="16" fill="#102030" />
-          <rect x="2" y="2" width="12" height="12" fill="none" stroke="#e8f0f8" stroke-width="2" />
+          <rect
+            x="2"
+            y="2"
+            width="12"
+            height="12"
+            fill="none"
+            stroke="#e8f0f8"
+            stroke-width="2"
+          />
           <rect x="6" y="6" width="4" height="4" fill="#5fde5f" />
         }
         @case ('power') {
           <rect x="0" y="0" width="16" height="16" fill="#102030" />
-          <rect x="3" y="2" width="10" height="12" fill="#b0c0d0" stroke="#102030" stroke-width="1" />
+          <rect
+            x="3"
+            y="2"
+            width="10"
+            height="12"
+            fill="#b0c0d0"
+            stroke="#102030"
+            stroke-width="1"
+          />
           <rect x="7" y="3" width="2" height="10" fill="#102030" />
           <rect x="5" y="6" width="6" height="2" fill="#cc8800" />
           <rect x="5" y="9" width="6" height="2" fill="#cc8800" />
@@ -46,24 +63,53 @@ export type OsIconName =
         }
         @case ('terminal') {
           <rect x="0" y="0" width="16" height="16" fill="#000000" />
-          <rect x="1" y="2" width="14" height="12" fill="#000000" stroke="#5fde5f" stroke-width="2" />
+          <rect
+            x="1"
+            y="2"
+            width="14"
+            height="12"
+            fill="#000000"
+            stroke="#5fde5f"
+            stroke-width="2"
+          />
           <polygon points="3,7 6,9 3,11" fill="#5fde5f" />
           <rect x="7" y="9" width="7" height="2" fill="#cccccc" />
         }
         @case ('warning') {
           <rect x="0" y="0" width="16" height="16" fill="#102030" />
-          <polygon points="8,1 15,15 1,15" fill="#cc8800" stroke="#102030" stroke-width="1" />
+          <polygon
+            points="8,1 15,15 1,15"
+            fill="#cc8800"
+            stroke="#102030"
+            stroke-width="1"
+          />
           <rect x="7" y="6" width="2" height="5" fill="#000000" />
           <rect x="7" y="12" width="2" height="2" fill="#000000" />
         }
         @case ('sensor') {
           <rect x="0" y="0" width="16" height="16" fill="#102030" />
-          <rect x="3" y="3" width="10" height="10" fill="none" stroke="#e8f0f8" stroke-width="2" />
+          <rect
+            x="3"
+            y="3"
+            width="10"
+            height="10"
+            fill="none"
+            stroke="#e8f0f8"
+            stroke-width="2"
+          />
           <rect x="6" y="6" width="4" height="4" fill="#5fde5f" />
         }
         @case ('module') {
           <rect x="0" y="0" width="16" height="16" fill="#102030" />
-          <rect x="2" y="2" width="12" height="12" fill="#b0c0d0" stroke="#506070" stroke-width="2" />
+          <rect
+            x="2"
+            y="2"
+            width="12"
+            height="12"
+            fill="#b0c0d0"
+            stroke="#506070"
+            stroke-width="2"
+          />
           <rect x="4" y="4" width="8" height="8" fill="#6ba1d8" />
         }
         @case ('dinosaur') {
@@ -72,6 +118,25 @@ export type OsIconName =
           <rect x="5" y="3" width="6" height="4" fill="#5fde5f" />
           <rect x="6" y="4" width="2" height="2" fill="#cc2222" />
           <rect x="9" y="4" width="2" height="2" fill="#cc2222" />
+        }
+        @case ('weather') {
+          <rect x="0" y="0" width="16" height="16" fill="#102030" />
+          <circle
+            cx="8"
+            cy="7"
+            r="3"
+            fill="#ffcc00"
+            stroke="#102030"
+            stroke-width="1"
+          />
+          <path
+            d="M2 11 Q2 13 4 13 L12 13 Q14 13 14 11"
+            fill="none"
+            stroke="#8899dd"
+            stroke-width="2"
+          />
+          <rect x="5" y="13" width="1" height="2" fill="#8899dd" />
+          <rect x="10" y="13" width="1" height="2" fill="#8899dd" />
         }
       }
     </svg>

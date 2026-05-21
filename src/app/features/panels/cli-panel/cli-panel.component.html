@@ -10,7 +10,9 @@
     </ul>
   </div>
 
-  <pre class="cli-screen jp-terminal-inset" data-block="output">{{ outputText() }}</pre>
+  <pre class="cli-screen jp-terminal-inset" data-block="output">{{
+    outputText()
+  }}</pre>
 
   <div class="cli-prompt" data-block="input">
     <span class="cli-prompt__chev">&gt;</span>
@@ -25,8 +27,67 @@
   </div>
 
   <div class="cli-actions" data-block="quick-actions">
-    <button type="button" class="jp-btn" (click)="runAction('reset_fence', { id: 0 })">RESET F0</button>
-    <button type="button" class="jp-btn" (click)="runAction('dispatch_patrol')">PATROL</button>
-    <button type="button" class="jp-btn" (click)="runAction('emergency_venting')">VENT</button>
+    <!-- FENCE OPERATIONS -->
+    <button type="button" class="jp-btn" (click)="runAction('reset_fence')">
+      RESET FENCE
+    </button>
+
+    <button
+      type="button"
+      class="jp-btn"
+      (click)="runAction('increase_voltage')"
+    >
+      VOLT+ FENCE
+    </button>
+
+    <!-- SECURITY TEAMS -->
+    <button type="button" class="jp-btn" (click)="runAction('dispatch_patrol')">
+      PATROL
+    </button>
+
+    <!-- GENERATORS -->
+    <button
+      type="button"
+      class="jp-btn"
+      (click)="runAction('generator_restart')"
+    >
+      GEN RESTART
+    </button>
+
+    <!-- CAMERAS -->
+    <button type="button" class="jp-btn" (click)="runAction('cam_reboot')">
+      CAM REBOOT
+    </button>
+
+    <!-- POWER MGMT -->
+    <button type="button" class="jp-btn" (click)="runAction('power_reroute')">
+      POWER REROUTE
+    </button>
+
+    <!-- EMERGENCY OPS -->
+    <button
+      type="button"
+      class="jp-btn"
+      (click)="runAction('emergency_venting')"
+    >
+      VENT
+    </button>
+
+    <button
+      type="button"
+      class="jp-btn"
+      (click)="runAction('lethal_authorization')"
+    >
+      LAUTH
+    </button>
+
+    <!-- SYSTEM OPS -->
+    <button
+      type="button"
+      class="jp-btn"
+      (click)="runAction('system_hard_reboot')"
+    >
+      SYSREBOOT
+    </button>
   </div>
 </section>

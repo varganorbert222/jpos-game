@@ -25,6 +25,7 @@ const WINDOW_SIZES: Record<DockApp, { width: number; height: number }> = {
   security: { width: 720, height: 480 },
   power: { width: 680, height: 420 },
   dino: { width: 820, height: 520 },
+  weather: { width: 600, height: 680 },
 };
 
 @Injectable({ providedIn: 'root' })
@@ -62,6 +63,7 @@ export class WindowManagerService {
       power: 'POWER_GRID.SYS',
       dino: 'BIO_MONITOR',
       terminal: 'JP-OS TERMINAL',
+      weather: 'WEATHER_STATION',
     };
     const existing = this.windows().find((w) => w.app === app);
     if (existing) {

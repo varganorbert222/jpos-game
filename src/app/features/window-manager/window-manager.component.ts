@@ -12,6 +12,7 @@ import { SecurityWindowComponent } from './windows/security-window.component';
 import { PowerWindowComponent } from './windows/power-window.component';
 import { DinoWindowComponent } from './windows/dino-window.component';
 import { TerminalWindowComponent } from './windows/terminal-window.component';
+import { WeatherWindowComponent } from './windows/weather-window.component';
 
 @Component({
   selector: 'app-window-manager',
@@ -22,6 +23,7 @@ import { TerminalWindowComponent } from './windows/terminal-window.component';
     PowerWindowComponent,
     DinoWindowComponent,
     TerminalWindowComponent,
+    WeatherWindowComponent,
   ],
   templateUrl: './window-manager.component.html',
   styleUrl: './window-manager.component.scss',
@@ -39,7 +41,9 @@ export class WindowManagerComponent {
     origY: number;
   } | null = null;
 
-  iconFor(app: DockApp): 'security' | 'power' | 'dino' | 'terminal' {
+  iconFor(
+    app: DockApp,
+  ): 'security' | 'power' | 'dino' | 'terminal' | 'weather' {
     return app;
   }
 

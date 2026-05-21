@@ -1,17 +1,11 @@
-import type { ZoneId } from '../../../simulation';
+import { IslaNublarZoneLayout } from '../interfaces/isla-nublar-zone-layout.interface';
 
-export type ZoneMapState = 'nominal' | 'warn' | 'danger' | 'critical' | 'blackout';
-
-export interface IslaNublarZoneLayout {
-  id: ZoneId;
-  code: string;
-  label: string;
-  /** Normalized 0–1 schematic coordinates on island canvas */
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
+export type ZoneMapState =
+  | 'nominal'
+  | 'warn'
+  | 'danger'
+  | 'critical'
+  | 'blackout';
 
 /** Schematic Isla Nublar — deterministic layout for renderer */
 export const ISLA_NUBLAR_OUTLINE: readonly { x: number; y: number }[] = [
@@ -30,8 +24,24 @@ export const ISLA_NUBLAR_OUTLINE: readonly { x: number; y: number }[] = [
 ];
 
 export const ISLA_NUBLAR_ZONES: readonly IslaNublarZoneLayout[] = [
-  { id: 0, code: 'HN', label: 'Herbivore N', x: 0.38, y: 0.18, w: 0.22, h: 0.18 },
-  { id: 1, code: 'HS', label: 'Herbivore S', x: 0.28, y: 0.42, w: 0.24, h: 0.2 },
+  {
+    id: 0,
+    code: 'HN',
+    label: 'Herbivore N',
+    x: 0.38,
+    y: 0.18,
+    w: 0.22,
+    h: 0.18,
+  },
+  {
+    id: 1,
+    code: 'HS',
+    label: 'Herbivore S',
+    x: 0.28,
+    y: 0.42,
+    w: 0.24,
+    h: 0.2,
+  },
   { id: 2, code: 'PE', label: 'Predator E', x: 0.58, y: 0.32, w: 0.2, h: 0.22 },
   { id: 3, code: 'PW', label: 'Predator W', x: 0.2, y: 0.28, w: 0.2, h: 0.2 },
   { id: 4, code: 'RS', label: 'Research', x: 0.48, y: 0.52, w: 0.18, h: 0.16 },

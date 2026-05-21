@@ -4,6 +4,15 @@
     <span class="sys-banner__ver"
       >Jurassic Park — System Security Interface v4.0.5, Alpha E</span
     >
+    <span class="sys-banner__metrics">
+      CPU: {{ cpuUsage() }}% | RAM: {{ ramUsage() }}% | HDD:
+      {{ storageUsage() }}%
+    </span>
+    <span class="sys-banner__clock">
+      <span class="sys-banner__clock-icon">🕐</span>
+      <span class="sys-banner__clock-time">{{ formattedTime() }}</span>
+      <span class="sys-banner__clock-tz">{{ timezone() }}</span>
+    </span>
     <span class="sys-banner__state" [class.jp-critical]="gameOver()">{{
       bannerStatus()
     }}</span>

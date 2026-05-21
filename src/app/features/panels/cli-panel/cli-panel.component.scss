@@ -44,7 +44,8 @@
 }
 
 .cli-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   padding: 8px 10px;
   background: var(--jp-irix-title);
@@ -53,4 +54,5 @@
 
 .cli-actions .jp-btn {
   flex: 1;
+  height: 46px;
 }
