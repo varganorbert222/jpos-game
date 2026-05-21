@@ -1,0 +1,24 @@
+<section class="jp-panel logs-panel" [class]="telemetry.jitterClass()">
+  <h2 class="jp-panel__title"><app-os-icon name="terminal" /> SYSTEM LOG</h2>
+  <ul class="logs jp-info">
+    @for (l of logs(); track $index) {
+      <li>{{ l }}</li>
+    }
+  </ul>
+  <h2 class="jp-panel__title jp-panel__title--sub">OPERATOR ACTIONS</h2>
+  <div class="actions">
+    <button type="button" class="jp-btn" (click)="runAction('reset_fence', { id: 0 })">RESET FENCE 0</button>
+    <button type="button" class="jp-btn" (click)="runAction('increase_voltage', { id: 0 })">+VOLT F0</button>
+    <button type="button" class="jp-btn" (click)="runAction('dispatch_patrol')">PATROL</button>
+    <button type="button" class="jp-btn" (click)="runAction('generator_restart', { id: 0 })">GEN RESTART</button>
+    <button type="button" class="jp-btn jp-warn" (click)="runAction('emergency_venting')">EMERG VENT</button>
+    <button type="button" class="jp-btn jp-critical" (click)="runAction('system_hard_reboot')">HARD REBOOT</button>
+  </div>
+  <h2 class="jp-panel__title jp-panel__title--sub">COMMAND LINE</h2>
+  <div class="term-line">&gt;<input
+    class="jp-input term-input"
+    placeholder="help"
+    (keydown.enter)="onTerminalSubmit($any($event.target))"
+  /></div>
+  <pre class="term-out" [class.jp-corrupt]="corruptOutput()">{{ terminalOut() }}</pre>
+</section>

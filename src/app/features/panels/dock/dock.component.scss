@@ -1,0 +1,25 @@
+.dock {
+  height: var(--jp-dock-h);
+  display: flex;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--jp-irix-title);
+  border-top: 2px solid var(--jp-irix-bevel-dark);
+}
+
+.jp-dock-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--jp-irix-text);
+  background: var(--jp-irix-title);
+  font-size: var(--jp-font-sm);
+}
+
+.dock-indicator {
+  font-size: 10px;
+  color: var(--jp-term-nominal);
+  font-weight: 700;
+}

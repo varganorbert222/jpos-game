@@ -1,0 +1,128 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
+import { UiTelemetryService } from '../../../core/services/ui-telemetry.service';
+import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
+import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
+
+@Component({
+  selector: 'app-power-window',
+  standalone: true,
+  imports: [OsIconComponent],
+  template: `
+    <div class="win-panel" [class]="telemetry.jitterClass()">
+      <p>
+        <app-os-icon name="power" [size]="20" />
+        ALLOC:
+        <span class="alloc-metric {{ allocClass(alloc().fences) }}"
+          >F {{ alloc().fences }}%</span
+        >
+        |
+        <span class="alloc-metric {{ allocClass(alloc().cameras) }}"
+          >C {{ alloc().cameras }}%</span
+        >
+        |
+        <span class="alloc-metric {{ allocClass(alloc().logistics) }}"
+          >L {{ alloc().logistics }}%</span
+        >
+      </p>
+      <table class="jp-table">
+        <thead>
+          <tr>
+            <th>GEN</th>
+            <th>STATE</th>
+            <th>FUEL</th>
+            <th>LOAD</th>
+            <th>TEMP</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (g of generators(); track g.id) {
+            <tr>
+              <td>{{ g.id }}</td>
+              <td [class]="g.online ? 'jp-nominal' : 'jp-critical'">
+                {{ g.online ? 'ON' : 'OFF' }}
+              </td>
+              <td [class]="metricClass(g.fuel, g.id)">{{ fuelDisplay(g) }}</td>
+              <td [class]="metricClass(g.load, g.id + 10)">
+                {{ loadDisplay(g) }}
+              </td>
+              <td [class]="tempClass(g.temperature)">{{ tempDisplay(g) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class PowerWindowComponent {
+  private readonly sim = inject(SimulationBridgeService);
+  readonly telemetry = inject(UiTelemetryService);
+
+  readonly generators = computed(() => this.sim.snapshot()?.generators ?? []);
+  readonly alloc = computed(
+    () =>
+      this.sim.snapshot()?.powerAllocation ?? {
+        fences: 0,
+        cameras: 0,
+        logistics: 0,
+        sensors: 0,
+      },
+  );
+
+  fuelDisplay(g: { fuel: number; id: number }): string {
+    return this.telemetry.formatMetric(g.fuel, g.id, '%');
+  }
+
+  loadDisplay(g: { load: number; id: number }): string {
+    return this.telemetry.formatMetric(g.load, g.id + 3, '%');
+  }
+
+  tempDisplay(g: { temperature: number; id: number }): string {
+    return this.telemetry.formatMetric(g.temperature, g.id + 6, '');
+  }
+
+  metricClass(value: number, salt: number): string {
+    const displayed = this.telemetry.formatMetric(value, salt, '');
+    if (displayed === '###') {
+      return 'jp-corrupt';
+    }
+    if (value > 85) {
+      return 'jp-critical';
+    }
+    if (value > 70) {
+      return 'jp-danger';
+    }
+    if (value > 50) {
+      return 'jp-warn';
+    }
+    return 'jp-nominal';
+  }
+
+  allocClass(value: number): string {
+    if (value > 85) {
+      return 'jp-critical';
+    }
+    if (value > 70) {
+      return 'jp-danger';
+    }
+    if (value > 50) {
+      return 'jp-warn';
+    }
+    return 'jp-nominal';
+  }
+
+  tempClass(temp: number): string {
+    if (temp > 85) {
+      return 'jp-critical';
+    }
+    if (temp > 70) {
+      return 'jp-danger';
+    }
+    return 'jp-nominal';
+  }
+}

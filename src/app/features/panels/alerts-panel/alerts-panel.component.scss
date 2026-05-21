@@ -1,0 +1,48 @@
+.alerts-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.jp-panel__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 8px 10px;
+  font-size: var(--jp-font-base);
+  overflow-y: auto;
+  flex: 1;
+  background: var(--jp-irix-window);
+}
+
+li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--jp-irix-bevel-dark);
+  line-height: var(--jp-line);
+  color: var(--jp-irix-text);
+}
+
+.events {
+  background: var(--jp-irix-title);
+}
+
+.events li[data-sev='critical'] {
+  color: var(--jp-term-critical);
+}
+
+.events li[data-sev='major'] {
+  color: var(--jp-term-warn);
+}
+
+.events li[data-sev='minor'] {
+  color: var(--jp-term-nominal);
+}

@@ -1,0 +1,21 @@
+<section class="jp-panel alerts-panel" data-region="alerts">
+  <h2 class="jp-panel__title">
+    <app-os-icon name="warning" /> SECURITY ALERTS
+  </h2>
+  <ul class="alerts">
+    @for (a of alerts(); track $index) {
+      <li [class]="severityClass(a)">
+        <app-jp-status-icon [kind]="alertIcon(a)" />
+        {{ a }}
+      </li>
+    }
+  </ul>
+  <h3 class="jp-panel__title jp-panel__title--sub">
+    <app-os-icon name="sensor" /> ACTIVE EVENTS
+  </h3>
+  <ul class="events">
+    @for (e of events(); track e.id) {
+      <li [attr.data-sev]="e.severity">{{ e.message }}</li>
+    }
+  </ul>
+</section>

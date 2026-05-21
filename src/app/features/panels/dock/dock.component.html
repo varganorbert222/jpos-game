@@ -1,0 +1,18 @@
+<nav class="dock" data-region="dock">
+  @for (a of apps; track a.id) {
+    <button
+      type="button"
+      class="jp-btn jp-dock-btn"
+      [attr.data-app]="a.id"
+      [attr.data-open]="isOpen(a.id)"
+      [attr.data-focused]="isFocused(a.id)"
+      (click)="open(a.id)"
+    >
+      <app-os-icon [name]="a.id" />
+      <span>{{ a.label }}</span>
+      @if (isOpen(a.id)) {
+        <span class="dock-indicator" aria-hidden="true">■</span>
+      }
+    </button>
+  }
+</nav>

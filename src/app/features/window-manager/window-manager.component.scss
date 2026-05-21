@@ -1,0 +1,18 @@
+.jp-os-window__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.jp-os-window__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jp-os-window__controls {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}

@@ -1,0 +1,56 @@
+.cli-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.cli-commands {
+  border-bottom: 2px solid var(--jp-irix-bevel-dark);
+  background: var(--jp-irix-window);
+  flex: 0 0 auto;
+}
+
+.cli-commands__label {
+  padding: 6px 10px 0;
+  font-size: var(--jp-font-sm);
+}
+
+.cli-screen {
+  flex: 1;
+  margin: 8px;
+  padding: 8px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  min-height: 100px;
+}
+
+.cli-prompt {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--jp-irix-window);
+  border-top: 2px solid var(--jp-irix-bevel-dark);
+}
+
+.cli-prompt__chev {
+  color: var(--jp-term-nominal);
+  font-weight: 700;
+}
+
+.cli-input {
+  flex: 1;
+}
+
+.cli-actions {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--jp-irix-title);
+  border-top: 2px solid var(--jp-irix-bevel-dark);
+}
+
+.cli-actions .jp-btn {
+  flex: 1;
+}

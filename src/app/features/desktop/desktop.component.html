@@ -1,0 +1,30 @@
+<div class="desktop" data-region="desktop">
+  <header class="sys-banner">
+    <span class="sys-banner__brand">INGEN</span>
+    <span class="sys-banner__ver"
+      >Jurassic Park — System Security Interface v4.0.5, Alpha E</span
+    >
+    <span class="sys-banner__state" [class.jp-critical]="gameOver()">{{
+      bannerStatus()
+    }}</span>
+  </header>
+
+  <div class="workspace">
+    <div class="layout">
+      <app-alerts-panel class="col left" />
+      <app-center-panel class="col center" />
+      <app-cli-panel class="col right" />
+    </div>
+    <app-window-manager />
+  </div>
+
+  <app-dock />
+
+  <footer class="status-bar">
+    <span>{{ statusLeft() }}</span>
+    <span class="status-bar__center"
+      >TICK {{ tick() }} | PHASE {{ phase() }}</span
+    >
+    <span class="status-bar__end">{{ statusRight() }}</span>
+  </footer>
+</div>

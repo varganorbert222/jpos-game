@@ -1,0 +1,21 @@
+.viewport {
+  width: 100vw;
+  height: 100vh;
+  background: #102030;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.frame-outer {
+  position: relative;
+  image-rendering: pixelated;
+  background: var(--jp-irix-desktop);
+}
+
+.frame-inner {
+  position: relative;
+  image-rendering: pixelated;
+  background: var(--jp-irix-desktop);
+}

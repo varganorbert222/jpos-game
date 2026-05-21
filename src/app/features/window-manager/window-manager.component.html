@@ -1,0 +1,48 @@
+@for (w of wm.windows(); track w.id) {
+  @if (!w.minimized) {
+    <article
+      class="jp-os-window"
+      [attr.data-window-id]="w.id"
+      [attr.data-app]="w.app"
+      [attr.data-focused]="wm.isFocused(w.id)"
+      [attr.data-open]="true"
+      [style.left.px]="w.x"
+      [style.top.px]="w.y"
+      [style.width.px]="w.width"
+      [style.height.px]="w.height"
+      [style.zIndex]="w.z"
+      (mousedown)="focus(w.id)"
+    >
+      <header
+        class="jp-os-window__chrome"
+        (mousedown)="startDrag(w.id, w.x, w.y, $event)"
+      >
+        <div class="jp-os-window__left">
+          <app-os-icon [name]="iconFor(w.app)" />
+          <span class="jp-os-window__title">{{ w.title }}</span>
+        </div>
+        <div class="jp-os-window__controls">
+          <button type="button" class="jp-os-window__ctrl" (click)="minimize(w.id, $event)">–</button>
+          <button type="button" class="jp-os-window__ctrl" (click)="maximize(w.id, $event)">□</button>
+          <button type="button" class="jp-os-window__ctrl" (click)="close(w.id, $event)">X</button>
+        </div>
+      </header>
+      <div class="jp-os-window__body">
+        @switch (w.app) {
+          @case ('security') {
+            <app-security-window />
+          }
+          @case ('power') {
+            <app-power-window />
+          }
+          @case ('dino') {
+            <app-dino-window />
+          }
+          @case ('terminal') {
+            <app-terminal-window />
+          }
+        }
+      </div>
+    </article>
+  }
+}

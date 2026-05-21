@@ -1,0 +1,52 @@
+<div class="feeds" data-region="camera-feeds">
+  @for (f of pageFeeds(); track f.id) {
+    <article
+      class="feed"
+      [attr.data-camera-id]="f.id"
+      [attr.data-zone-id]="f.zoneId"
+      [attr.data-state]="f.state"
+      [attr.data-overlay]="f.overlay"
+    >
+      <header class="feed__head">
+        <app-jp-status-icon [kind]="f.statusKind" />
+        <span class="feed__label">{{ f.label }}</span>
+      </header>
+      <div class="feed__viewport">
+        <img
+          title="feed_gif"
+          class="feed__gif"
+          [src]="f.gifPath"
+          [alt]="'Camera ' + f.id"
+          width="192"
+          height="144"
+          loading="lazy"
+        />
+        @if (f.overlay !== "none") {
+          <div class="feed__overlay" [attr.data-overlay]="f.overlay"></div>
+        }
+      </div>
+      <footer class="feed__state">{{ f.state }}</footer>
+    </article>
+  }
+</div>
+<div class="feeds-controls">
+  <button
+    class="jp-btn"
+    type="button"
+    (click)="prevPage()"
+    [disabled]="page() === 0"
+  >
+    ‹ Prev
+  </button>
+  <span class="feeds-controls__label"
+    >Page {{ page() + 1 }} / {{ pageCount() }}</span
+  >
+  <button
+    class="jp-btn"
+    type="button"
+    (click)="nextPage()"
+    [disabled]="page() + 1 >= pageCount()"
+  >
+    Next ›
+  </button>
+</div>

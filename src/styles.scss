@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap');
+@import './styles/jpos-theme';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--jp-black);
+  font-family: var(--jp-font);
+  font-size: var(--jp-font-base);
+  font-weight: 700;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+}
+
+button,
+input,
+pre,
+table,
+select {
+  font-family: inherit;
+  font-weight: inherit;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--jp-black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--jp-irix-frame);
+  border: 2px solid var(--jp-black);
+}

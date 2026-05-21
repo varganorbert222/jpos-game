@@ -1,0 +1,42 @@
+.logs-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.logs {
+  list-style: none;
+  margin: 0;
+  padding: 8px 10px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.term-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 6px;
+  font-size: var(--jp-font-base);
+}
+
+.term-input {
+  flex: 1;
+  border: none;
+  border-bottom: 2px solid var(--jp-green-cursor);
+}
+
+.term-out {
+  margin: 0;
+  padding: 6px 10px 10px;
+  min-height: 36px;
+  white-space: pre-wrap;
+}
