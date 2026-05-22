@@ -11,13 +11,19 @@
   gap: 8px;
 }
 
+.alerts-loader,
+.events-loader {
+  flex: 1;
+  min-height: 0;
+}
+
 ul {
   list-style: none;
   margin: 0;
   padding: 8px 10px;
   font-size: var(--jp-font-base);
-  flex: 1;
-  min-height: 0;
+  height: 100%;
+  min-height: 4.5rem;
   background: var(--jp-irix-window);
 }
 

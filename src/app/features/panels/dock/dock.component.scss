@@ -20,6 +20,15 @@
 
 .dock-indicator {
   font-size: 10px;
-  color: var(--jp-term-nominal);
   font-weight: 700;
+  line-height: 1;
+}
+
+.dock-indicator--active {
+  color: var(--jp-term-nominal);
+}
+
+.dock-indicator--minimized {
+  color: var(--jp-term-warn);
+  letter-spacing: -2px;
 }

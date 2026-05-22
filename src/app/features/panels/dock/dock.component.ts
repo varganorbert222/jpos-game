@@ -33,4 +33,22 @@ export class DockComponent {
   isFocused(app: DockApp): boolean {
     return this.wm.focusedApp() === app;
   }
+
+  isInMemory(app: DockApp): boolean {
+    return this.wm.isInMemory(app);
+  }
+
+  isMinimized(app: DockApp): boolean {
+    return this.wm.isMinimized(app);
+  }
+
+  dockTitle(app: DockApp): string {
+    if (this.isMinimized(app)) {
+      return `${app} — minimized (in memory)`;
+    }
+    if (this.isOpen(app)) {
+      return `${app} — active`;
+    }
+    return app;
+  }
 }

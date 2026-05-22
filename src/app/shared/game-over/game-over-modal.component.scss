@@ -1,0 +1,105 @@
+.jp-game-over-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 65000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a1020d8;
+}
+
+.jp-game-over {
+  border-top: 2px solid var(--jp-irix-bevel-light);
+  border-left: 2px solid var(--jp-irix-bevel-light);
+  border-right: 2px solid var(--jp-irix-bevel-dark);
+  border-bottom: 2px solid var(--jp-irix-bevel-dark);
+  width: min(520px, 92%);
+  background: var(--jp-irix-window);
+  color: var(--jp-irix-text);
+  font-family: var(--jp-font-ui);
+}
+
+.jp-game-over__head {
+  display: flex;
+  align-items: stretch;
+  background: var(--jp-irix-title);
+  border-bottom: 2px solid var(--jp-irix-bevel-dark);
+}
+
+.jp-game-over__title {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--jp-term-critical);
+  font-size: var(--jp-font-sm);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.jp-game-over__close {
+  flex: 0 0 auto;
+  width: 28px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-left: 2px solid var(--jp-irix-bevel-dark);
+  background: var(--jp-irix-title);
+  color: var(--jp-irix-text);
+  font-family: var(--jp-font-ui);
+  font-size: var(--jp-font-sm);
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.jp-game-over__close:hover {
+  background: var(--jp-irix-title-active);
+  color: var(--jp-term-critical);
+}
+
+.jp-game-over__reason {
+  margin: 0;
+  padding: 12px 12px 0;
+  font-size: var(--jp-font-base);
+  font-weight: 700;
+  line-height: var(--jp-line);
+}
+
+.jp-game-over__stats {
+  margin: 12px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 10px;
+  border-top: 2px solid var(--jp-irix-bevel-dark);
+  border-left: 2px solid var(--jp-irix-bevel-dark);
+  border-right: 2px solid var(--jp-irix-bevel-light);
+  border-bottom: 2px solid var(--jp-irix-bevel-light);
+  background: var(--jp-term-inset-bg);
+}
+
+.jp-game-over__stat {
+  display: grid;
+  gap: 2px;
+}
+
+.jp-game-over__stat dt {
+  margin: 0;
+  color: var(--jp-irix-text-dim);
+  font-size: var(--jp-font-sm);
+  letter-spacing: 0.06em;
+}
+
+.jp-game-over__stat dd {
+  margin: 0;
+  color: var(--jp-term-inset-fg);
+  font-family: var(--jp-font);
+  font-size: var(--jp-font-base);
+  font-weight: 700;
+}
+
+.jp-game-over__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 4px 12px 14px;
+}

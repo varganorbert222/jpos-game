@@ -6,6 +6,7 @@ import {
   WeatherMetricIconComponent,
   type WeatherMetricKind,
 } from '../../../shared/weather-metric-icon/weather-metric-icon.component';
+import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
 
 interface WeatherMetricCell {
   metric: WeatherMetricKind;
@@ -17,9 +18,9 @@ interface WeatherMetricCell {
 @Component({
   selector: 'app-weather-window',
   standalone: true,
-  imports: [DatePipe, WeatherMetricIconComponent],
+  imports: [DatePipe, WeatherMetricIconComponent, RetroScrollDirective],
   template: `
-    <div class="win-panel" [class]="telemetry.jitterClass()">
+    <div class="win-panel" [class]="telemetry.jitterClass()" jpRetroScroll>
       <section class="weather-section">
         <h3 class="weather-title jp-panel__title--sub">CURRENT CONDITIONS</h3>
 

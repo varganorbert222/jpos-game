@@ -69,6 +69,10 @@ export class CameraFeedsComponent {
     return this.feeds().slice(start, start + this.feedsPerPage);
   });
 
+  readonly canGoPrev = computed(() => this.page() > 0);
+
+  readonly canGoNext = computed(() => this.page() < this.pageCount() - 1);
+
   constructor() {
     effect(() => {
       const pages = this.pageCount();
@@ -79,11 +83,17 @@ export class CameraFeedsComponent {
   }
 
   prevPage(): void {
-    this.page.update((value) => Math.max(0, value - 1));
+    if (!this.canGoPrev()) {
+      return;
+    }
+    this.page.update((value) => value - 1);
   }
 
   nextPage(): void {
-    this.page.update((value) => Math.min(this.pageCount() - 1, value + 1));
+    if (!this.canGoNext()) {
+      return;
+    }
+    this.page.update((value) => value + 1);
   }
 
   private statusKind(state: string): JpStatusKind {

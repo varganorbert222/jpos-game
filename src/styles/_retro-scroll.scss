@@ -1,7 +1,9 @@
-// Motif / IRIX-style scrollbars — always reserve gutter; thumb dims when inactive.
+// Motif / IRIX-style scrollbars — square edges, 3D bevel, pixel arrows.
+// Chromium 121+: do NOT set scrollbar-width/color on the host — they override
+// ::-webkit-scrollbar-* and force the platform's rounded thumb.
 
 :root {
-  --jp-scroll-size: 17px;
+  --jp-scroll-size: 16px;
   --jp-scroll-track: #b8c5d4;
   --jp-scroll-track-inset: #8fa3b8;
   --jp-scroll-thumb: #d2dce9;
@@ -11,33 +13,66 @@
   --jp-scroll-arrow-inactive: #7a92a8;
 }
 
+@mixin jp-retro-scroll-square {
+  border-radius: 0 !important;
+  -webkit-border-radius: 0 !important;
+  box-shadow: none;
+}
+
+@mixin jp-retro-scroll-thumb-bevel($fill) {
+  background-color: $fill;
+  background-image: none;
+  border: none;
+  box-shadow:
+    inset 1px 1px 0 var(--jp-irix-bevel-light),
+    inset -1px -1px 0 var(--jp-irix-bevel-dark);
+}
+
+/** Standard scrollbar props — Firefox only (Chromium ignores webkit if these are set). */
+@mixin jp-retro-scroll-firefox {
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--jp-scroll-thumb) var(--jp-scroll-track);
+  }
+}
+
 @mixin jp-retro-scroll-core {
   &::-webkit-scrollbar {
     width: var(--jp-scroll-size);
     height: var(--jp-scroll-size);
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--jp-scroll-track);
+    @include jp-retro-scroll-square;
   }
 
-  &::-webkit-scrollbar-track {
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-track-piece {
+    @include jp-retro-scroll-square;
     background: var(--jp-scroll-track);
     border-left: 2px solid var(--jp-irix-bevel-dark);
     border-right: 1px solid var(--jp-irix-bevel-light);
-    box-shadow: inset 1px 0 0 var(--jp-scroll-track-inset);
+    border-top: 1px solid var(--jp-irix-bevel-dark);
+    border-bottom: 1px solid var(--jp-irix-bevel-light);
   }
 
-  &::-webkit-scrollbar-thumb {
-    background: var(--jp-scroll-thumb);
-    border: 2px solid;
-    border-color: var(--jp-irix-bevel-light) var(--jp-irix-bevel-dark)
-      var(--jp-irix-bevel-dark) var(--jp-irix-bevel-light);
-    min-height: 24px;
-    min-width: 24px;
+  &::-webkit-scrollbar-thumb,
+  &::-webkit-scrollbar-thumb:vertical,
+  &::-webkit-scrollbar-thumb:horizontal {
+    @include jp-retro-scroll-square;
+    @include jp-retro-scroll-thumb-bevel(var(--jp-scroll-thumb));
+    min-height: 20px;
+    min-width: 20px;
   }
 
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--jp-scroll-thumb-hover);
+  &::-webkit-scrollbar-thumb:hover,
+  &::-webkit-scrollbar-thumb:vertical:hover,
+  &::-webkit-scrollbar-thumb:horizontal:hover {
+    @include jp-retro-scroll-thumb-bevel(var(--jp-scroll-thumb-hover));
   }
 
-  &::-webkit-scrollbar-button:single-button {
+  &::-webkit-scrollbar-button {
+    @include jp-retro-scroll-square;
     background-color: var(--jp-irix-title);
     border: 2px solid;
     border-color: var(--jp-irix-bevel-light) var(--jp-irix-bevel-dark)
@@ -45,45 +80,50 @@
     background-repeat: no-repeat;
     background-position: center;
     display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
   }
 
   &::-webkit-scrollbar-button:single-button:vertical:decrement {
-    height: 15px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%234b6a87' d='M5 0 10 6H0z'/%3E%3C/svg%3E");
+    height: 16px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect fill='%234b6a87' x='3' y='0' width='2' height='2'/%3E%3Crect fill='%234b6a87' x='2' y='2' width='4' height='2'/%3E%3Crect fill='%234b6a87' x='1' y='4' width='6' height='2'/%3E%3C/svg%3E");
   }
 
   &::-webkit-scrollbar-button:single-button:vertical:increment {
-    height: 15px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%234b6a87' d='M0 0h10L5 6z'/%3E%3C/svg%3E");
+    height: 16px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect fill='%234b6a87' x='1' y='2' width='6' height='2'/%3E%3Crect fill='%234b6a87' x='2' y='4' width='4' height='2'/%3E%3Crect fill='%234b6a87' x='3' y='6' width='2' height='2'/%3E%3C/svg%3E");
   }
 
   &::-webkit-scrollbar-button:single-button:horizontal:decrement {
-    width: 15px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10'%3E%3Cpath fill='%234b6a87' d='M0 5 6 0v10z'/%3E%3C/svg%3E");
+    width: 16px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect fill='%234b6a87' x='0' y='3' width='2' height='2'/%3E%3Crect fill='%234b6a87' x='2' y='2' width='2' height='4'/%3E%3Crect fill='%234b6a87' x='4' y='1' width='2' height='6'/%3E%3C/svg%3E");
   }
 
   &::-webkit-scrollbar-button:single-button:horizontal:increment {
-    width: 15px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10'%3E%3Cpath fill='%234b6a87' d='M6 5 0 0v10l6-5z'/%3E%3C/svg%3E");
+    width: 16px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect fill='%234b6a87' x='2' y='1' width='2' height='6'/%3E%3Crect fill='%234b6a87' x='4' y='2' width='2' height='4'/%3E%3Crect fill='%234b6a87' x='6' y='3' width='2' height='2'/%3E%3C/svg%3E");
   }
 
   &::-webkit-scrollbar-corner {
+    @include jp-retro-scroll-square;
     background: var(--jp-scroll-track);
-    border-top: 1px solid var(--jp-irix-bevel-dark);
-    border-left: 1px solid var(--jp-irix-bevel-dark);
+    border-top: 2px solid var(--jp-irix-bevel-dark);
+    border-left: 2px solid var(--jp-irix-bevel-dark);
   }
 }
 
 @mixin jp-retro-scroll-auto {
-  @include jp-retro-scroll-core;
   overflow-y: auto;
   overflow-x: hidden;
+  @include jp-retro-scroll-core;
+  @include jp-retro-scroll-firefox;
 }
 
 .jp-retro-scroll {
-  @include jp-retro-scroll-core;
   overflow-y: scroll;
   overflow-x: hidden;
+  @include jp-retro-scroll-core;
+  @include jp-retro-scroll-firefox;
 }
 
 /** Scrollbar appears only when content overflows (e.g. OS window panels). */
@@ -92,23 +132,27 @@
 }
 
 .jp-retro-scroll--both {
-  @include jp-retro-scroll-core;
   overflow: scroll;
+  @include jp-retro-scroll-core;
+  @include jp-retro-scroll-firefox;
 }
 
 .jp-retro-scroll--inactive {
-  &::-webkit-scrollbar-thumb {
-    background: var(--jp-scroll-thumb-inactive);
-    border-color: var(--jp-irix-bevel-dark) var(--jp-irix-bevel-light)
-      var(--jp-irix-bevel-light) var(--jp-irix-bevel-dark);
+  &::-webkit-scrollbar-thumb,
+  &::-webkit-scrollbar-thumb:vertical,
+  &::-webkit-scrollbar-thumb:horizontal {
+    @include jp-retro-scroll-thumb-bevel(var(--jp-scroll-thumb-inactive));
+    box-shadow:
+      inset 1px 1px 0 var(--jp-irix-bevel-dark),
+      inset -1px -1px 0 var(--jp-irix-bevel-light);
     pointer-events: none;
   }
 
   &::-webkit-scrollbar-button:single-button:vertical:decrement {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%237a92a8' d='M5 0 10 6H0z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect fill='%237a92a8' x='3' y='0' width='2' height='2'/%3E%3Crect fill='%237a92a8' x='2' y='2' width='4' height='2'/%3E%3Crect fill='%237a92a8' x='1' y='4' width='6' height='2'/%3E%3C/svg%3E");
   }
 
   &::-webkit-scrollbar-button:single-button:vertical:increment {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%237a92a8' d='M0 0h10L5 6z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect fill='%237a92a8' x='1' y='2' width='6' height='2'/%3E%3Crect fill='%237a92a8' x='2' y='4' width='4' height='2'/%3E%3Crect fill='%237a92a8' x='3' y='6' width='2' height='2'/%3E%3C/svg%3E");
   }
 }

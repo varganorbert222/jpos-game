@@ -3,6 +3,7 @@ import { UiTelemetryService } from '../../../core/services/ui-telemetry.service'
 import type { TrendIndicator } from '../../../core/services/ui-telemetry.service';
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
+import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
 
 interface DinoRow {
   id: number;
@@ -16,9 +17,9 @@ interface DinoRow {
 @Component({
   selector: 'app-dino-window',
   standalone: true,
-  imports: [OsIconComponent],
+  imports: [OsIconComponent, RetroScrollDirective],
   template: `
-    <div class="win-panel">
+    <div class="win-panel" jpRetroScroll>
       <p>
         <app-os-icon name="dinosaur" [size]="20" />
         BIO_MONITOR — derived telemetry only

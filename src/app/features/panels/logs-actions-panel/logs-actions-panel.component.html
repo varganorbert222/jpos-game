@@ -15,13 +15,22 @@
     <button type="button" class="jp-btn jp-critical" (click)="runAction('system_hard_reboot')">HARD REBOOT</button>
   </div>
   <h2 class="jp-panel__title jp-panel__title--sub">COMMAND LINE</h2>
-  <div class="term-line">&gt;<input
-    class="jp-input term-input"
-    placeholder="help"
-    (keydown.enter)="onTerminalSubmit($any($event.target))"
-  /></div>
+  <div class="term-line jp-terminal-prompt--underline" jpTerminalPrompt>
+    <span class="jp-terminal-prompt__prefix term-line__chev">&gt;</span>
+    <input
+      #termInput
+      class="jp-terminal-prompt__input term-input"
+      placeholder="help"
+      autocomplete="off"
+      spellcheck="false"
+      (keydown)="onTerminalKeydown($event, termInput)"
+      (keydown.enter)="onTerminalSubmit(termInput)"
+    />
+  </div>
   <pre
     class="term-out jp-terminal-viewport"
     [class.jp-corrupt]="corruptOutput()"
+    jpRetroScroll
+    jpTerminalAutoscroll
   >{{ terminalOut() }}</pre>
 </section>

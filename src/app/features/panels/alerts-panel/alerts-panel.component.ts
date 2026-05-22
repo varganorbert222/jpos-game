@@ -4,11 +4,12 @@ import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { JpStatusIconComponent, type JpStatusKind } from '../../../shared/jp-status-icon/jp-status-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
 import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
+import { SectionLoaderComponent } from '../../../shared/boot/section-loader.component';
 
 @Component({
   selector: 'app-alerts-panel',
   standalone: true,
-  imports: [OsIconComponent, JpStatusIconComponent, RetroScrollDirective],
+  imports: [OsIconComponent, JpStatusIconComponent, RetroScrollDirective, SectionLoaderComponent],
   templateUrl: './alerts-panel.component.html',
   styleUrl: './alerts-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

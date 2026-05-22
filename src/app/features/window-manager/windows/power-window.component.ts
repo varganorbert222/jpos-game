@@ -7,12 +7,13 @@ import {
 import { UiTelemetryService } from '../../../core/services/ui-telemetry.service';
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
+import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
 @Component({
   selector: 'app-power-window',
   standalone: true,
-  imports: [OsIconComponent],
+  imports: [OsIconComponent, RetroScrollDirective],
   template: `
-    <div class="win-panel" [class]="telemetry.jitterClass()">
+    <div class="win-panel" [class]="telemetry.jitterClass()" jpRetroScroll>
       <p>
         <app-os-icon name="power" [size]="20" />
         ALLOC:

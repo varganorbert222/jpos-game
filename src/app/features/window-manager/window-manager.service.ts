@@ -1,4 +1,5 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { SystemBootService } from '../../core/services/system-boot.service';
 import type { DockApp } from '../panels/dock/dock.component';
 
 export interface OsWindow {
@@ -15,10 +16,13 @@ export interface OsWindow {
   restoreRect: { x: number; y: number; width: number; height: number } | null;
 }
 
+/** Draggable window area inside the desktop workspace (logical px). */
 const WORK_X = 12;
 const WORK_Y = 56;
 const WORK_W = 1576;
 const WORK_H = 1060;
+const WORK_MAX_X = WORK_X + WORK_W;
+const WORK_MAX_Y = WORK_Y + WORK_H;
 
 const WINDOW_SIZES: Record<DockApp, { width: number; height: number }> = {
   terminal: { width: 820, height: 582 },
@@ -30,6 +34,8 @@ const WINDOW_SIZES: Record<DockApp, { width: number; height: number }> = {
 
 @Injectable({ providedIn: 'root' })
 export class WindowManagerService {
+  private readonly boot = inject(SystemBootService);
+
   readonly windows = signal<OsWindow[]>([]);
   readonly focusedId = signal<string | null>(null);
   readonly moveSnap = signal(8);
@@ -44,8 +50,18 @@ export class WindowManagerService {
   });
   private zCounter = 10;
 
+  /** Window visible on workspace (not minimized). */
   isOpen(app: DockApp): boolean {
     return this.windows().some((w) => w.app === app && !w.minimized);
+  }
+
+  /** Window instance still in memory (open or minimized). */
+  isInMemory(app: DockApp): boolean {
+    return this.windows().some((w) => w.app === app);
+  }
+
+  isMinimized(app: DockApp): boolean {
+    return this.windows().some((w) => w.app === app && w.minimized);
   }
 
   isFocused(id: string): boolean {
@@ -75,12 +91,13 @@ export class WindowManagerService {
     }
     const size = WINDOW_SIZES[app];
     const offset = this.windows().length * 28;
+    const pos = this.clampPosition(140 + offset, 100 + offset, size.width, size.height);
     const win: OsWindow = {
       id: `${app}-${Date.now()}`,
       app,
       title: titles[app],
-      x: 140 + offset,
-      y: 100 + offset,
+      x: pos.x,
+      y: pos.y,
       width: size.width,
       height: size.height,
       z: this.zCounter++,
@@ -90,6 +107,27 @@ export class WindowManagerService {
     };
     this.windows.update((list) => [...list, win]);
     this.focusedId.set(win.id);
+    this.boot.beginWindowLoad(win.id);
+  }
+
+  /** Cold boot / hard reboot — no open or minimized windows. */
+  resetAll(): void {
+    for (const w of this.windows()) {
+      this.boot.releaseWindow(w.id);
+    }
+    this.windows.set([]);
+    this.focusedId.set(null);
+    this.zCounter = 10;
+  }
+
+  reloadVisibleWindows(): void {
+    for (const w of this.windows()) {
+      if (w.minimized) {
+        this.boot.markWindowReady(w.id);
+      } else {
+        this.boot.beginWindowLoad(w.id);
+      }
+    }
   }
 
   setMoveSnap(pixels: number): void {
@@ -102,8 +140,22 @@ export class WindowManagerService {
     return Math.round(value / step) * step;
   }
 
+  private clampPosition(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ): { x: number; y: number } {
+    const maxX = Math.max(WORK_X, WORK_MAX_X - width);
+    const maxY = Math.max(WORK_Y, WORK_MAX_Y - height);
+    return {
+      x: this.snapValue(Math.min(Math.max(WORK_X, x), maxX)),
+      y: this.snapValue(Math.min(Math.max(WORK_Y, y), maxY)),
+    };
+  }
+
   close(id: string): void {
-    const closing = this.windows().find((w) => w.id === id);
+    this.boot.releaseWindow(id);
     this.windows.update((list) => list.filter((w) => w.id !== id));
     if (this.focusedId() === id) {
       const remaining = this.windows().filter(
@@ -112,7 +164,6 @@ export class WindowManagerService {
       const top = remaining.sort((a, b) => b.z - a.z)[0];
       this.focusedId.set(top?.id ?? null);
     }
-    void closing;
   }
 
   focus(id: string): void {
@@ -125,15 +176,13 @@ export class WindowManagerService {
 
   move(id: string, x: number, y: number): void {
     this.windows.update((list) =>
-      list.map((w) =>
-        w.id === id && !w.maximized
-          ? {
-              ...w,
-              x: Math.max(WORK_X, this.snapValue(x)),
-              y: Math.max(WORK_Y, this.snapValue(y)),
-            }
-          : w,
-      ),
+      list.map((w) => {
+        if (w.id !== id || w.maximized) {
+          return w;
+        }
+        const pos = this.clampPosition(x, y, w.width, w.height);
+        return { ...w, x: pos.x, y: pos.y };
+      }),
     );
   }
 
@@ -170,11 +219,12 @@ export class WindowManagerService {
             width: w.width,
             height: w.height,
           };
+          const pos = this.clampPosition(r.x, r.y, r.width, r.height);
           return {
             ...w,
             maximized: false,
-            x: r.x,
-            y: r.y,
+            x: pos.x,
+            y: pos.y,
             width: r.width,
             height: r.height,
             restoreRect: null,

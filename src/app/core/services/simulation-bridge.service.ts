@@ -34,6 +34,17 @@ export class SimulationBridgeService {
     this.engine.stop();
   }
 
+  /** New run after game over — fresh simulation, no save. */
+  resetToInitial(): void {
+    this.save.clear();
+    this.engine.resetToInitial();
+    this.snapshot.set(null);
+  }
+
+  isRunning(): boolean {
+    return this.engine.isRunning();
+  }
+
   onAudio(handler: (alerts: string[]) => void): void {
     this.audioHandler = handler;
   }

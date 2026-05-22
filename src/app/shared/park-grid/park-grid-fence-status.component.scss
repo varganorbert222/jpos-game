@@ -1,0 +1,33 @@
+:host {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  background: var(--jp-term-inset-bg);
+  color: var(--jp-term-cursor);
+  border-top: 2px solid var(--jp-irix-bevel-dark);
+  border-left: 2px solid var(--jp-irix-bevel-dark);
+  border-right: 2px solid var(--jp-irix-bevel-light);
+  border-bottom: 2px solid var(--jp-irix-bevel-light);
+  font-family: var(--jp-font-ui);
+  font-size: var(--jp-font-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  min-width: 210px;
+}
+
+:host.park-grid-fence-status--verify {
+  animation: jp-fence-verify-blink 0.9s steps(2, end) infinite;
+}
+
+@keyframes jp-fence-verify-blink {
+  0%,
+  49% {
+    color: var(--jp-term-warn);
+  }
+  50%,
+  100% {
+    color: var(--jp-term-inset-fg);
+  }
+}

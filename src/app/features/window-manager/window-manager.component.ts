@@ -13,12 +13,14 @@ import { PowerWindowComponent } from './windows/power-window.component';
 import { DinoWindowComponent } from './windows/dino-window.component';
 import { TerminalWindowComponent } from './windows/terminal-window.component';
 import { WeatherWindowComponent } from './windows/weather-window.component';
+import { SectionLoaderComponent } from '../../shared/boot/section-loader.component';
 
 @Component({
   selector: 'app-window-manager',
   standalone: true,
   imports: [
     OsIconComponent,
+    SectionLoaderComponent,
     SecurityWindowComponent,
     PowerWindowComponent,
     DinoWindowComponent,
@@ -32,7 +34,6 @@ import { WeatherWindowComponent } from './windows/weather-window.component';
 export class WindowManagerComponent {
   readonly wm = inject(WindowManagerService);
   private readonly display = inject(DisplayScaleService);
-
   private drag: {
     id: string;
     startX: number;

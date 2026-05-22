@@ -1,7 +1,34 @@
 <div class="viewport">
   <div class="frame-outer" [ngStyle]="display.frameStyles()">
     <div class="frame-inner" [ngStyle]="display.innerStyles()">
-      <app-desktop />
+      @if (boot.showBootScreen() || boot.showShutdownScreen()) {
+        <app-boot-screen />
+      } @else if (boot.showSystemReady()) {
+        <app-system-ready-terminal />
+      } @else if (!auth.isAuthenticated() && boot.showLoginScreen()) {
+        <app-login-screen />
+      } @else if (auth.isAuthenticated()) {
+        @if (boot.desktopActive()) {
+          <app-desktop />
+        }
+        @if (boot.showRebootModal()) {
+          <app-jp-confirm-modal
+            title="SYSTEM HARD REBOOT"
+            confirmLabel="YES"
+            cancelLabel="NO"
+            message="Hard reboot will take longer than a routine cycle. Perimeter fence power rails will drop offline until the kernel finishes reloading. Proceed?"
+            (confirmed)="boot.confirmHardReboot()"
+            (cancelled)="boot.cancelHardReboot()"
+          />
+        }
+        @if (collapseSnapshot(); as ended) {
+          <app-game-over-modal
+            [snapshot]="ended"
+            (close)="onDismissCollapseModal()"
+            (restart)="onRestartAfterCollapse()"
+          />
+        }
+      }
       <app-crt-overlay />
     </div>
   </div>

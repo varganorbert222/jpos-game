@@ -46,12 +46,12 @@
 
 @keyframes jp-cursor-blink {
   0%,
-  49.9% {
-    visibility: visible;
+  50% {
+    background-color: var(--jp-term-cursor);
   }
-  50%,
+  50.01%,
   100% {
-    visibility: hidden;
+    background-color: transparent;
   }
 }
 
@@ -98,8 +98,93 @@
   min-width: 12px;
   height: 1.1em;
   vertical-align: text-bottom;
-  background: var(--jp-term-cursor);
-  animation: jp-cursor-blink var(--jp-cursor-blink-ms) step-end infinite;
+  background-color: var(--jp-term-cursor);
+  animation: jp-cursor-blink var(--jp-cursor-blink-ms) steps(2, end) infinite;
+}
+
+/** Inline command line: native caret off, block cursor after typed text. */
+.jp-terminal-prompt {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  width: 100%;
+  max-width: 100%;
+  gap: 6px;
+  color: var(--jp-term-inset-fg);
+  font-family: var(--jp-font);
+  font-size: var(--jp-font-base);
+  font-weight: 700;
+  line-height: var(--jp-line);
+}
+
+.jp-terminal-prompt__prefix {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding-bottom: 6px;
+}
+
+.jp-terminal-prompt__prefix::after {
+  content: " ";
+}
+
+.jp-terminal-prompt__entry {
+  display: inline-flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  box-sizing: border-box;
+  @include irix-sunken;
+  background: var(--jp-term-inset-bg);
+  cursor: text;
+}
+
+.jp-terminal-prompt__input {
+  flex: 0 0 auto;
+  width: 1ch;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 !important;
+  margin: 0;
+  border: none !important;
+  outline: none;
+  background: transparent !important;
+  box-shadow: none !important;
+  caret-color: transparent;
+  color: var(--jp-term-inset-fg);
+  font: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+.jp-terminal-prompt__input:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--jp-term-inset-fg);
+}
+
+.jp-terminal-prompt__input::placeholder {
+  color: var(--jp-irix-text-dim);
+  opacity: 0.85;
+}
+
+.jp-terminal-prompt__entry .jp-terminal-cursor {
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.jp-terminal-prompt--underline .jp-terminal-prompt__entry {
+  min-height: 28px;
+  padding: 2px 0 4px;
+  background: var(--jp-term-inset-bg);
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: 2px solid var(--jp-green-cursor);
+  box-shadow: none;
 }
 
 .jp-terminal-inset {
@@ -111,18 +196,10 @@
   font-weight: 700;
 }
 
-/** Terminal output: no scrollbar; clip overflow (history trimmed in components). */
+/** Terminal output viewport; use [jpRetroScroll] for Motif scrollbar. */
 .jp-terminal-viewport {
-  overflow: hidden;
   flex: 1;
   min-height: 0;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
-  }
 }
 
 .jp-os-window {
@@ -195,33 +272,29 @@
   background: var(--jp-irix-window-unfocused);
 }
 
-/* Window app hosts sit between body and .win-panel — must constrain height. */
-.jp-os-window__body > app-security-window,
-.jp-os-window__body > app-power-window,
-.jp-os-window__body > app-dino-window,
-.jp-os-window__body > app-weather-window,
-.jp-os-window__body > app-terminal-window {
+.jp-os-window__body > app-jp-section-loader {
   display: block;
   height: 100%;
   min-height: 0;
   overflow: hidden;
 }
 
-.jp-os-window__body .win-panel {
+.jp-os-window__body app-jp-section-loader .jp-section-loader {
   height: 100%;
-  max-height: 100%;
   min-height: 0;
-  box-sizing: border-box;
-  @include jp-retro-scroll-auto;
 }
 
+.jp-os-window__body .win-panel,
 .jp-os-window__body .jp-terminal {
   height: 100%;
   max-height: 100%;
   min-height: 0;
+  box-sizing: border-box;
+}
+
+.jp-os-window__body .jp-terminal {
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
 }
 
 .jp-os-window__ctrl {
@@ -323,6 +396,23 @@
   background: var(--jp-irix-title-active);
 }
 
+.jp-btn:disabled,
+.jp-btn[disabled] {
+  cursor: default;
+  pointer-events: none;
+  color: var(--jp-irix-text-dim);
+  background: var(--jp-irix-window);
+  @include irix-sunken;
+  opacity: 0.65;
+}
+
+.jp-btn:disabled:hover,
+.jp-btn:disabled:active,
+.jp-btn[disabled]:hover,
+.jp-btn[disabled]:active {
+  background: var(--jp-irix-window);
+}
+
 .jp-input {
   background: var(--jp-term-inset-bg);
   color: var(--jp-term-inset-fg);
@@ -411,6 +501,16 @@
   border-bottom-color: var(--jp-irix-bevel-dark);
 }
 
+.jp-dock-btn[data-minimized="true"]:not([data-open="true"]) {
+  background: var(--jp-irix-window-unfocused);
+  color: var(--jp-irix-text-dim);
+  border-top-color: var(--jp-irix-bevel-light);
+  border-left-color: var(--jp-irix-bevel-light);
+  border-right-color: var(--jp-irix-bevel-dark);
+  border-bottom-color: var(--jp-irix-bevel-dark);
+  box-shadow: inset 1px 1px 0 #8fa3b8;
+}
+
 .jp-dock-btn[data-focused="true"] {
   background: var(--jp-irix-title-active);
   border-top: 2px solid #102030;
@@ -460,3 +560,5 @@
 .jp-table .jp-corrupt {
   color: var(--jp-term-corrupt);
 }
+
+@import "./boot";

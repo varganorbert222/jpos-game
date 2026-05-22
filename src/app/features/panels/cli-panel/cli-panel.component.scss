@@ -5,10 +5,13 @@
   padding: 0;
 }
 
+.cli-next-loader {
+  flex: 0 0 auto;
+}
+
 .cli-next {
   border-bottom: 2px solid var(--jp-irix-bevel-dark);
   background: var(--jp-irix-window);
-  flex: 0 0 auto;
   padding: 0 10px 8px;
   min-height: 300px;
 }
@@ -55,7 +58,8 @@
   margin: 8px;
   padding: 8px;
   white-space: pre-wrap;
-  min-height: 100px;
+  flex: 1;
+  min-height: 0;
 }
 
 .cli-prompt {
@@ -73,7 +77,7 @@
 }
 
 .cli-input {
-  flex: 1;
+  color: var(--jp-term-inset-fg);
 }
 
 .cli-actions {

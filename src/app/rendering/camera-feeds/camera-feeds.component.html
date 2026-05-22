@@ -34,7 +34,8 @@
     class="jp-btn"
     type="button"
     (click)="prevPage()"
-    [disabled]="page() === 0"
+    [disabled]="!canGoPrev()"
+    [attr.aria-disabled]="!canGoPrev()"
   >
     ‹ Prev
   </button>
@@ -45,7 +46,8 @@
     class="jp-btn"
     type="button"
     (click)="nextPage()"
-    [disabled]="page() + 1 >= pageCount()"
+    [disabled]="!canGoNext()"
+    [attr.aria-disabled]="!canGoNext()"
   >
     Next ›
   </button>

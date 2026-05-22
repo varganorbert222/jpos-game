@@ -57,6 +57,16 @@ export class SimulationEngine {
     }
   }
 
+  resetToInitial(seed?: number): void {
+    this.stop();
+    this.state = createInitialState(seed);
+    this.rng = new SeededRng(this.state.rngSeed);
+  }
+
+  isRunning(): boolean {
+    return this.timerId !== null;
+  }
+
   queuePlayerAction(type: string, params?: Record<string, string | number>): void {
     queueAction(this.state, type, params);
   }

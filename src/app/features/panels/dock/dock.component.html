@@ -4,14 +4,25 @@
       type="button"
       class="jp-btn jp-dock-btn"
       [attr.data-app]="a.id"
+      [attr.data-in-memory]="isInMemory(a.id)"
       [attr.data-open]="isOpen(a.id)"
+      [attr.data-minimized]="isMinimized(a.id)"
       [attr.data-focused]="isFocused(a.id)"
+      [attr.title]="dockTitle(a.id)"
       (click)="open(a.id)"
     >
       <app-os-icon [name]="a.id" />
       <span>{{ a.label }}</span>
       @if (isOpen(a.id)) {
-        <span class="dock-indicator" aria-hidden="true">■</span>
+        <span class="dock-indicator dock-indicator--active" aria-hidden="true"
+          >■</span
+        >
+      } @else if (isMinimized(a.id)) {
+        <span
+          class="dock-indicator dock-indicator--minimized"
+          aria-hidden="true"
+          >■</span
+        >
       }
     </button>
   }

@@ -1,36 +1,40 @@
 <section class="jp-panel cli-panel" data-region="cli">
   <h2 class="jp-panel__title">COMMAND INTERFACE</h2>
 
-  <div class="cli-next" data-block="next-command">
-    <div class="cli-next__label jp-info">NEXT COMMAND</div>
-    <p class="cli-next__warn jp-warn">
-      Advisory: options below are possibilities only — they may worsen conditions.
-    </p>
-    <ul class="cli-next__list">
-      @for (s of nextSuggestions(); track s.usage) {
-        <li>
-          <span class="cli-next__cmd">{{ s.usage }}</span>
-          <span class="cli-next__note">— {{ s.note }}</span>
-        </li>
-      }
-    </ul>
-  </div>
+  <app-jp-section-loader sectionId="next_command" class="cli-next-loader">
+    <div class="cli-next" data-block="next-command">
+      <div class="cli-next__label jp-info">NEXT COMMAND</div>
+      <p class="cli-next__warn jp-warn">
+        Advisory: options below are possibilities only — they may worsen conditions.
+      </p>
+      <ul class="cli-next__list">
+        @for (s of nextSuggestions(); track s.usage) {
+          <li>
+            <span class="cli-next__cmd">{{ s.usage }}</span>
+            <span class="cli-next__note">— {{ s.note }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  </app-jp-section-loader>
 
   <pre
     class="cli-screen jp-terminal-inset jp-terminal-viewport"
     data-block="output"
+    jpRetroScroll
+    jpTerminalAutoscroll
   >{{ outputText() }}</pre>
 
-  <div class="cli-prompt" data-block="input">
-    <span class="cli-prompt__chev">&gt;</span>
+  <div class="cli-prompt" data-block="input" jpTerminalPrompt>
+    <span class="jp-terminal-prompt__prefix cli-prompt__chev">&gt;</span>
     <input
       #cmdInput
-      class="jp-input cli-input"
+      class="jp-terminal-prompt__input cli-input"
       autocomplete="off"
       spellcheck="false"
+      (keydown)="onInputKeydown($event, cmdInput)"
       (keydown.enter)="onSubmit(cmdInput)"
     />
-    <span class="jp-terminal-cursor" aria-hidden="true"></span>
   </div>
 
   <div class="cli-actions" data-block="quick-actions">

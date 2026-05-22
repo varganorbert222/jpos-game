@@ -21,15 +21,16 @@
 }
 
 .term-line {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   padding: 0 10px 6px;
   font-size: var(--jp-font-base);
 }
 
+.term-line__chev {
+  color: var(--jp-term-nominal);
+  font-weight: 700;
+}
+
 .term-input {
-  flex: 1;
   border: none;
   border-bottom: 2px solid var(--jp-green-cursor);
 }

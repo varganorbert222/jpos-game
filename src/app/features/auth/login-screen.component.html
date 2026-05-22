@@ -1,0 +1,82 @@
+<div class="jp-login-screen" role="dialog" aria-label="Operator login">
+  <form
+    class="jp-login-screen__panel"
+    autocomplete="off"
+    (submit)="onSubmit($event)"
+  >
+    <header class="jp-login-screen__head">
+      <h1 class="jp-login-screen__title">JP-OS OPERATOR LOGIN</h1>
+      <p class="jp-login-screen__sub jp-info">
+        Jurassic Park — System Security Interface v4.0.5
+      </p>
+    </header>
+
+    <label class="jp-login-screen__field">
+      <span class="jp-login-screen__label">USERNAME</span>
+      <input
+        class="jp-input jp-login-screen__input"
+        type="text"
+        name="jp-operator-id"
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-form-type="other"
+        [value]="username()"
+        (input)="onUsernameInput($event)"
+      />
+    </label>
+
+    <label class="jp-login-screen__field">
+      <span class="jp-login-screen__label">PASSWORD</span>
+      <input
+        class="jp-input jp-login-screen__input jp-login-screen__input--secret"
+        type="text"
+        name="jp-operator-secret"
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-form-type="other"
+        [value]="password()"
+        (input)="onPasswordInput($event)"
+      />
+    </label>
+
+    <p
+      class="jp-login-screen__error"
+      [class.jp-critical]="!!error()"
+      role="alert"
+      aria-live="polite"
+      [attr.aria-hidden]="error() ? null : true"
+    >
+      {{ error() }}
+    </p>
+
+    <button
+      class="jp-btn jp-login-screen__submit"
+      type="submit"
+      [disabled]="submitting()"
+    >
+      {{ submitting() ? 'AUTHENTICATING...' : 'SIGN IN' }}
+    </button>
+
+    <button
+      class="jp-btn jp-login-screen__shutdown jp-warn"
+      type="button"
+      [disabled]="submitting()"
+      (click)="onShutdown()"
+    >
+      SYSTEM SHUTDOWN
+    </button>
+
+    <p class="jp-login-screen__hint jp-info">
+      Admin: <kbd>admin</kbd> / <kbd>admin</kbd> — operators: matching
+      username/password (e.g. <kbd>ops1</kbd> / <kbd>ops1</kbd>).
+    </p>
+  </form>
+</div>

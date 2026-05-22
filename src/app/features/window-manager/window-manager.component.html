@@ -46,23 +46,25 @@
         </div>
       </header>
       <div class="jp-os-window__body">
-        @switch (w.app) {
-          @case ("security") {
-            <app-security-window />
+        <app-jp-section-loader [windowId]="w.id" [windowApp]="w.app">
+          @switch (w.app) {
+            @case ("security") {
+              <app-security-window />
+            }
+            @case ("power") {
+              <app-power-window />
+            }
+            @case ("dino") {
+              <app-dino-window />
+            }
+            @case ("terminal") {
+              <app-terminal-window />
+            }
+            @case ("weather") {
+              <app-weather-window />
+            }
           }
-          @case ("power") {
-            <app-power-window />
-          }
-          @case ("dino") {
-            <app-dino-window />
-          }
-          @case ("terminal") {
-            <app-terminal-window />
-          }
-          @case ("weather") {
-            <app-weather-window />
-          }
-        }
+        </app-jp-section-loader>
       </div>
     </article>
   }

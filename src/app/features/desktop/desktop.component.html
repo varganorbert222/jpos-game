@@ -8,14 +8,26 @@
       CPU: {{ cpuUsage() }}% | RAM: {{ ramUsage() }}% | HDD:
       {{ storageUsage() }}%
     </span>
-    <span class="sys-banner__clock">
-      <span class="sys-banner__clock-icon">🕐</span>
-      <span class="sys-banner__clock-time">{{ formattedTime() }}</span>
-      <span class="sys-banner__clock-tz">{{ timezone() }}</span>
+    <span
+      class="sys-banner__clock"
+      [class.sys-banner__clock--halted]="sessionHalted()"
+    >
+      <span class="sys-banner__clock-icon" aria-hidden="true">⏱</span>
+      <span class="sys-banner__clock-time">{{ sessionElapsed() }}</span>
+      <span class="sys-banner__clock-label">ELAPSED</span>
     </span>
-    <span class="sys-banner__state" [class.jp-critical]="gameOver()">{{
-      bannerStatus()
-    }}</span>
+    <span
+      class="sys-banner__state"
+      [class.jp-critical]="bannerCritical()"
+      >{{ bannerStatus() }}</span
+    >
+    <button
+      type="button"
+      class="jp-btn sys-banner__logout"
+      (click)="logout()"
+    >
+      LOGOUT
+    </button>
   </header>
 
   <div class="workspace">

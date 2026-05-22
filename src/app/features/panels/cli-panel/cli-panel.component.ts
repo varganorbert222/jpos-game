@@ -3,18 +3,33 @@ import { CLI_HELP_LINES } from '../../../core/constants/cli-commands';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
 import { terminalActionNeedsParam } from '../../../../simulation/actions';
 import { getNextCommandSuggestions } from '../../../../simulation/terminal-suggestions';
+import { SystemBootService } from '../../../core/services/system-boot.service';
+import { SectionLoaderComponent } from '../../../shared/boot/section-loader.component';
+import { TerminalCommandHistory } from '../../../shared/terminal/terminal-command-history';
+import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
+import { TerminalAutoscrollDirective } from '../../../shared/terminal/terminal-autoscroll.directive';
+import { TerminalPromptDirective } from '../../../shared/terminal/terminal-prompt.directive';
+import { applyTerminalInputValue } from '../../../shared/terminal/terminal-input-value';
 
 const MAX_TERMINAL_LINES = 40;
 
 @Component({
   selector: 'app-cli-panel',
   standalone: true,
+  imports: [
+    SectionLoaderComponent,
+    RetroScrollDirective,
+    TerminalAutoscrollDirective,
+    TerminalPromptDirective,
+  ],
   templateUrl: './cli-panel.component.html',
   styleUrl: './cli-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CliPanelComponent {
   private readonly sim = inject(SimulationBridgeService);
+  private readonly boot = inject(SystemBootService);
+  private readonly history = new TerminalCommandHistory();
   readonly outputLines = signal<string[]>([
     'JP-OS COMMAND INTERFACE',
     'Type "help" for command list.',
@@ -28,15 +43,22 @@ export class CliPanelComponent {
   });
 
   onQuickAction(type: string, input: HTMLInputElement): void {
+    if (type === 'system_hard_reboot') {
+      input.value = '';
+      this.boot.promptHardReboot();
+      return;
+    }
     const needsParam = terminalActionNeedsParam(type);
-    input.value = needsParam ? `${type} ` : type;
     if (needsParam) {
+      applyTerminalInputValue(input, `${type} `);
       input.focus();
-      const end = input.value.length;
-      input.setSelectionRange(end, end);
       return;
     }
     this.execLine(type, input);
+  }
+
+  onInputKeydown(event: KeyboardEvent, input: HTMLInputElement): void {
+    this.history.handleKeydown(event, input);
   }
 
   onSubmit(input: HTMLInputElement): void {
@@ -48,9 +70,14 @@ export class CliPanelComponent {
   }
 
   private execLine(line: string, input: HTMLInputElement): void {
+    this.history.push(line);
     input.value = '';
     if (line.toLowerCase() === 'cls') {
       this.outputLines.set([]);
+      return;
+    }
+    if (line.toLowerCase() === 'system_hard_reboot') {
+      this.boot.promptHardReboot();
       return;
     }
     this.append(`> ${line}`);

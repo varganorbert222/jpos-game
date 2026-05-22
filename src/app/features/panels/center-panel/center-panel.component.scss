@@ -6,16 +6,32 @@
   min-height: 0;
 }
 
-app-zone-map-canvas {
+.park-grid-head__title {
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.park-grid-head__label {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  min-width: 0;
+}
+
+.park-grid-loader {
   flex: 1 1 auto;
   min-height: 260px;
   margin: 8px;
+}
+
+.park-grid-loader app-zone-map-canvas {
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 100%;
 }
 
-app-camera-feeds {
+.camera-feeds-loader {
   flex: 0 0 auto;
   min-height: 220px;
   margin: 0 8px 8px;

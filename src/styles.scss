@@ -103,4 +103,5 @@ svg {
   height: auto;
 }
 
-/* Scrollbars: .jp-retro-scroll + [jpRetroScroll] in _retro-scroll.scss */
+/* Scrollbars: [jpRetroScroll] → .jp-retro-scroll (_retro-scroll.scss).
+   Chromium: webkit-only (no scrollbar-width/color on host). Firefox: @supports fallback. */

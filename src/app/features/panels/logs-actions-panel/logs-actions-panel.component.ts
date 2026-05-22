@@ -3,17 +3,28 @@ import { UiTelemetryService } from '../../../core/services/ui-telemetry.service'
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
 import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
+import { SystemBootService } from '../../../core/services/system-boot.service';
+import { TerminalCommandHistory } from '../../../shared/terminal/terminal-command-history';
+import { TerminalAutoscrollDirective } from '../../../shared/terminal/terminal-autoscroll.directive';
+import { TerminalPromptDirective } from '../../../shared/terminal/terminal-prompt.directive';
 
 @Component({
   selector: 'app-logs-actions-panel',
   standalone: true,
-  imports: [OsIconComponent, RetroScrollDirective],
+  imports: [
+    OsIconComponent,
+    RetroScrollDirective,
+    TerminalAutoscrollDirective,
+    TerminalPromptDirective,
+  ],
   templateUrl: './logs-actions-panel.component.html',
   styleUrl: './logs-actions-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogsActionsPanelComponent {
   private readonly sim = inject(SimulationBridgeService);
+  private readonly boot = inject(SystemBootService);
+  private readonly history = new TerminalCommandHistory();
   readonly telemetry = inject(UiTelemetryService);
 
   readonly logs = computed(() => {
@@ -24,8 +35,16 @@ export class LogsActionsPanelComponent {
   readonly corruptOutput = computed(() => this.telemetry.corruption() > 55);
 
   runAction(type: string, params?: Record<string, string | number>): void {
+    if (type === 'system_hard_reboot') {
+      this.boot.promptHardReboot();
+      return;
+    }
     this.sim.queueAction(type, params);
     this.terminalOut.set(`> Queued: ${type}`);
+  }
+
+  onTerminalKeydown(event: KeyboardEvent, input: HTMLInputElement): void {
+    this.history.handleKeydown(event, input);
   }
 
   onTerminalSubmit(input: HTMLInputElement): void {
@@ -33,9 +52,14 @@ export class LogsActionsPanelComponent {
     if (!line) {
       return;
     }
+    this.history.push(line);
     input.value = '';
     if (line.toLowerCase() === 'cls') {
       this.terminalOut.set('');
+      return;
+    }
+    if (line.toLowerCase() === 'system_hard_reboot') {
+      this.boot.promptHardReboot();
       return;
     }
     const out = this.sim.runTerminal(line);

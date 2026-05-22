@@ -1,0 +1,31 @@
+<div class="jp-system-ready" role="application" aria-label="System halted">
+  <div class="jp-system-ready__screen" (click)="focusCmd()">
+    <div class="jp-system-ready__line" jpTerminalPrompt>
+      <span class="jp-terminal-prompt__prefix">SYSTEM READY...</span>
+      <input
+        #cmd
+        class="jp-terminal-prompt__input"
+        type="text"
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        [disabled]="boot.systemReadyBusy()"
+        [attr.data-hide-cursor]="boot.systemReadyBusy() ? '' : null"
+        [value]="command()"
+        (input)="onCommandInput($event)"
+        (keydown.enter)="onEnter($event)"
+      />
+    </div>
+    <p
+      class="jp-system-ready__out"
+      [class.jp-system-ready__out--empty]="!lastOut()"
+      role="status"
+      aria-live="polite"
+    >
+      {{ lastOut() }}
+    </p>
+  </div>
+</div>
