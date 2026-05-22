@@ -7,7 +7,6 @@ import {
 import { UiTelemetryService } from '../../../core/services/ui-telemetry.service';
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
-
 @Component({
   selector: 'app-power-window',
   standalone: true,

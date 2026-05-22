@@ -1,6 +1,6 @@
 <section class="jp-panel logs-panel" [class]="telemetry.jitterClass()">
   <h2 class="jp-panel__title"><app-os-icon name="terminal" /> SYSTEM LOG</h2>
-  <ul class="logs jp-info">
+  <ul class="logs jp-info" jpRetroScroll>
     @for (l of logs(); track $index) {
       <li>{{ l }}</li>
     }
@@ -20,5 +20,8 @@
     placeholder="help"
     (keydown.enter)="onTerminalSubmit($any($event.target))"
   /></div>
-  <pre class="term-out" [class.jp-corrupt]="corruptOutput()">{{ terminalOut() }}</pre>
+  <pre
+    class="term-out jp-terminal-viewport"
+    [class.jp-corrupt]="corruptOutput()"
+  >{{ terminalOut() }}</pre>
 </section>

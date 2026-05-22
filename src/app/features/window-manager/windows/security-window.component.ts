@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { UiTelemetryService } from '../../../core/services/ui-telemetry.service';
 import { JpStatusIconComponent, type JpStatusKind } from '../../../shared/jp-status-icon/jp-status-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
-
 @Component({
   selector: 'app-security-window',
   standalone: true,

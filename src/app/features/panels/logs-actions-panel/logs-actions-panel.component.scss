@@ -10,7 +10,7 @@
   margin: 0;
   padding: 8px 10px;
   flex: 1;
-  overflow-y: auto;
+  min-height: 0;
 }
 
 .actions {
@@ -38,5 +38,6 @@
   margin: 0;
   padding: 6px 10px 10px;
   min-height: 36px;
+  max-height: 5rem;
   white-space: pre-wrap;
 }

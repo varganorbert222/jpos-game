@@ -16,8 +16,8 @@ ul {
   margin: 0;
   padding: 8px 10px;
   font-size: var(--jp-font-base);
-  overflow-y: auto;
   flex: 1;
+  min-height: 0;
   background: var(--jp-irix-window);
 }
 

@@ -1,4 +1,16 @@
 import type { QueuedPlayerAction, SimulationState } from './types';
+import { TERMINAL_HELP_LINES, TERMINAL_QUEUE_ACTIONS } from './terminal-manifest';
+import {
+  parseIntegerParam,
+  paramParseError,
+  validateCameraId,
+  validateDinoId,
+  validateFenceId,
+  validateGeneratorId,
+  validateZoneId,
+} from './terminal-validation';
+
+export { terminalActionNeedsParam } from './terminal-manifest';
 
 const COOLDOWNS: Record<string, number> = {
   reset_fence: 3,
@@ -11,6 +23,67 @@ const COOLDOWNS: Record<string, number> = {
   lethal_authorization: 10,
   system_hard_reboot: 15,
 };
+
+function queueValidatedAction(
+  state: SimulationState,
+  type: string,
+  params: Record<string, string | number> = {},
+): string {
+  queueAction(state, type, params);
+  return `OK: ${type} queued`;
+}
+
+function queueWithFenceId(state: SimulationState, type: string, raw: string | undefined): string {
+  const parsed = parseIntegerParam(raw);
+  if (parsed === 'missing' || parsed === 'invalid') {
+    return paramParseError('fence ID', parsed);
+  }
+  const err = validateFenceId(state, parsed);
+  if (err) {
+    return err;
+  }
+  return queueValidatedAction(state, type, { id: parsed });
+}
+
+function queueWithCameraId(state: SimulationState, type: string, raw: string | undefined): string {
+  const parsed = parseIntegerParam(raw);
+  if (parsed === 'missing' || parsed === 'invalid') {
+    return paramParseError('camera ID', parsed);
+  }
+  const err = validateCameraId(state, parsed);
+  if (err) {
+    return err;
+  }
+  return queueValidatedAction(state, type, { id: parsed });
+}
+
+function queueWithGeneratorId(
+  state: SimulationState,
+  type: string,
+  raw: string | undefined,
+): string {
+  const parsed = parseIntegerParam(raw);
+  if (parsed === 'missing' || parsed === 'invalid') {
+    return paramParseError('generator ID', parsed);
+  }
+  const err = validateGeneratorId(state, parsed);
+  if (err) {
+    return err;
+  }
+  return queueValidatedAction(state, type, { id: parsed });
+}
+
+function queueWithZone(state: SimulationState, type: string, raw: string | undefined): string {
+  const parsed = parseIntegerParam(raw);
+  if (parsed === 'missing' || parsed === 'invalid') {
+    return paramParseError('zone', parsed);
+  }
+  const err = validateZoneId(state, parsed);
+  if (err) {
+    return err;
+  }
+  return queueValidatedAction(state, type, { zone: parsed });
+}
 
 export function queueAction(
   state: SimulationState,
@@ -130,35 +203,32 @@ export function parseTerminalCommand(
 
   switch (parts[0]) {
     case 'help':
-      return [
-        'JP-OS COMMAND SET (limited):',
-        '  help                   — List commands',
-        '  status                 — Park stability and phase',
-        '  fence reset [ID]       — Queue fence reset',
-        '  cam reboot [ID]        — Queue camera reboot',
-        '  dino track [ID]        — Derived specimen telemetry',
-        '  power reroute [ZONE]   — Queue power reroute',
-      ].join('\n');
+      return TERMINAL_HELP_LINES.join('\n');
+    case 'cls':
+      return 'OK: display cleared';
     case 'status':
       return `STABILITY ${Math.round(state.stability)} | TICK ${state.tick} | PHASE ${state.escalationPhase} | WX ${state.weather}`;
     case 'fence':
-      if (parts[1] === 'reset' && parts[2] != null) {
-        queueAction(state, 'reset_fence', { id: Number(parts[2]) });
-        return 'OK: fence reset queued';
+      if (parts[1] === 'reset') {
+        return queueWithFenceId(state, 'reset_fence', parts[2]);
       }
       return 'ERR: usage fence reset [ID]';
     case 'cam':
-      if (parts[1] === 'reboot' && parts[2] != null) {
-        queueAction(state, 'cam_reboot', { id: Number(parts[2]) });
-        return 'OK: camera reboot queued';
+      if (parts[1] === 'reboot') {
+        return queueWithCameraId(state, 'cam_reboot', parts[2]);
       }
       return 'ERR: usage cam reboot [ID]';
     case 'dino':
-      if (parts[1] === 'track' && parts[2] != null) {
-        const d = state.dinosaurs[Number(parts[2])];
-        if (!d) {
-          return 'ERR: invalid dino id';
+      if (parts[1] === 'track') {
+        const parsed = parseIntegerParam(parts[2]);
+        if (parsed === 'missing' || parsed === 'invalid') {
+          return paramParseError('dino ID', parsed);
         }
+        const err = validateDinoId(state, parsed);
+        if (err) {
+          return err;
+        }
+        const d = state.dinosaurs[parsed];
         const threat =
           d.stress >= 75 ? 'Critical' : d.stress >= 45 ? 'Unstable' : 'Stable';
         const act =
@@ -171,12 +241,35 @@ export function parseTerminalCommand(
       }
       return 'ERR: usage dino track [ID]';
     case 'power':
-      if (parts[1] === 'reroute' && parts[2] != null) {
-        queueAction(state, 'power_reroute', { zone: Number(parts[2]) });
-        return 'OK: power reroute queued';
+      if (parts[1] === 'reroute') {
+        return queueWithZone(state, 'power_reroute', parts[2]);
       }
       return 'ERR: usage power reroute [ZONE]';
-    default:
-      return 'ERR: unknown command';
+    default: {
+      const paramKey = TERMINAL_QUEUE_ACTIONS[parts[0]];
+      if (paramKey == null && !(parts[0] in TERMINAL_QUEUE_ACTIONS)) {
+        return 'ERR: unknown command';
+      }
+      if (paramKey == null) {
+        return queueValidatedAction(state, parts[0]);
+      }
+      if (parts[1] == null) {
+        return `ERR: usage ${parts[0]} [${paramKey.toUpperCase()}]`;
+      }
+      switch (paramKey) {
+        case 'id':
+          if (parts[0] === 'generator_restart') {
+            return queueWithGeneratorId(state, parts[0], parts[1]);
+          }
+          if (parts[0] === 'cam_reboot') {
+            return queueWithCameraId(state, parts[0], parts[1]);
+          }
+          return queueWithFenceId(state, parts[0], parts[1]);
+        case 'zone':
+          return queueWithZone(state, parts[0], parts[1]);
+        default:
+          return 'ERR: unknown command';
+      }
+    }
   }
 }

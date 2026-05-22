@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { CLI_HELP_LINES } from '../../../core/constants/cli-commands';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
 
+const MAX_TERMINAL_LINES = 40;
+
 @Component({
   selector: 'app-terminal-window',
   standalone: true,
@@ -12,7 +14,7 @@ import { SimulationBridgeService } from '../../../core/services/simulation-bridg
         Version 4.0.5, Alpha E<br />
         Ready...<br />
       </div>
-      <pre class="screen jp-terminal-inset" data-block="output">{{ screen() }}</pre>
+      <pre class="screen jp-terminal-inset jp-terminal-viewport" data-block="output">{{ screen() }}</pre>
       <div class="prompt-line" data-block="input">
         <span class="prompt">&gt;</span>
         <input
@@ -38,10 +40,8 @@ import { SimulationBridgeService } from '../../../core/services/simulation-bridg
         margin: 0;
       }
       .screen {
-        flex: 1;
         margin: 0;
         padding: 8px;
-        overflow: auto;
         white-space: pre-wrap;
         min-height: 200px;
       }
@@ -70,16 +70,21 @@ export class TerminalWindowComponent {
     if (!trimmed) {
       return;
     }
+    if (trimmed.toLowerCase() === 'cls') {
+      this.screen.set('');
+      return;
+    }
     if (trimmed.toLowerCase() === 'help') {
-      this.screen.set(
-        (this.screen() ? this.screen() + '\n' : '') +
-          trimmed +
-          '\n' +
-          CLI_HELP_LINES.join('\n'),
-      );
+      this.appendScreen(`${trimmed}\n${CLI_HELP_LINES.join('\n')}`);
       return;
     }
     const result = this.sim.runTerminal(trimmed);
-    this.screen.set((this.screen() ? this.screen() + '\n' : '') + `${trimmed}\n${result}`);
+    this.appendScreen(`${trimmed}\n${result}`);
+  }
+
+  private appendScreen(chunk: string): void {
+    const merged = (this.screen() ? `${this.screen()}\n` : '') + chunk;
+    const lines = merged.split('\n');
+    this.screen.set(lines.slice(-MAX_TERMINAL_LINES).join('\n'));
   }
 }

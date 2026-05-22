@@ -15,9 +15,12 @@ export class DisplayScaleService {
   recalculate(): void {
     const sw = window.innerWidth;
     const sh = window.innerHeight;
-    const scaleX = Math.floor(sw / BASE_WIDTH);
-    const scaleY = Math.floor(sh / BASE_HEIGHT);
-    const s = Math.max(1, Math.min(scaleX, scaleY) || 1);
+
+    const scaleX = sw / BASE_WIDTH;
+    const scaleY = sh / BASE_HEIGHT;
+
+    const s = Math.min(scaleX, scaleY);
+
     this.scale.set(s);
   }
 

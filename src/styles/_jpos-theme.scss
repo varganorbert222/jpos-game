@@ -1,3 +1,5 @@
+@import "./retro-scroll";
+
 // SGI IRIX / Motif — solid colors only (no transparency, no gradients)
 :root {
   /* Desktop & chrome */
@@ -109,6 +111,20 @@
   font-weight: 700;
 }
 
+/** Terminal output: no scrollbar; clip overflow (history trimmed in components). */
+.jp-terminal-viewport {
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
 .jp-os-window {
   position: absolute;
   background: var(--jp-irix-window);
@@ -166,7 +182,7 @@
   flex: 1;
   min-height: 0;
   padding: 10px 12px;
-  overflow: auto;
+  overflow: hidden;
   background: var(--jp-irix-window);
   color: var(--jp-irix-text);
   font-family: var(--jp-font);
@@ -177,6 +193,35 @@
 
 .jp-os-window[data-focused="false"] .jp-os-window__body {
   background: var(--jp-irix-window-unfocused);
+}
+
+/* Window app hosts sit between body and .win-panel — must constrain height. */
+.jp-os-window__body > app-security-window,
+.jp-os-window__body > app-power-window,
+.jp-os-window__body > app-dino-window,
+.jp-os-window__body > app-weather-window,
+.jp-os-window__body > app-terminal-window {
+  display: block;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.jp-os-window__body .win-panel {
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  @include jp-retro-scroll-auto;
+}
+
+.jp-os-window__body .jp-terminal {
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .jp-os-window__ctrl {
@@ -347,7 +392,7 @@
 .jp-cli-command-list {
   list-style: none;
   margin: 0;
-  padding: 8px 10px;
+  padding: 4px 10px 8px;
   font-size: var(--jp-font-sm);
   color: var(--jp-irix-text-dim);
   background: var(--jp-irix-window);

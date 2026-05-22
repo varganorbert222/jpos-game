@@ -1,75 +1,62 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { WeatherService } from '../../../core/services/weather.service';
 import { UiTelemetryService } from '../../../core/services/ui-telemetry.service';
+import {
+  WeatherMetricIconComponent,
+  type WeatherMetricKind,
+} from '../../../shared/weather-metric-icon/weather-metric-icon.component';
+
+interface WeatherMetricCell {
+  metric: WeatherMetricKind;
+  label: string;
+  value: string;
+  valueClass?: string;
+}
 
 @Component({
   selector: 'app-weather-window',
   standalone: true,
-  imports: [CommonModule],
+  imports: [DatePipe, WeatherMetricIconComponent],
   template: `
     <div class="win-panel" [class]="telemetry.jitterClass()">
-      <!-- Current Conditions -->
-      <div class="weather-section">
-        <h3 class="weather-title">CURRENT CONDITIONS</h3>
+      <section class="weather-section">
+        <h3 class="weather-title jp-panel__title--sub">CURRENT CONDITIONS</h3>
 
-        <div class="weather-item">
-          <span class="label">🌡️ Temperature:</span>
-          <span class="value">{{ weather.temp | number: '1.0-0' }}°C</span>
-        </div>
+        <table class="jp-table weather-now">
+          <tbody>
+            @for (row of currentMetricRows(); track $index) {
+              <tr>
+                @for (cell of row; track cell.label) {
+                  <td>
+                    <div class="weather-metric">
+                      <app-weather-metric-icon [metric]="cell.metric" [size]="14" />
+                      <span class="weather-metric__lbl">{{ cell.label }}</span>
+                      <span
+                        class="weather-metric__val"
+                        [class]="cell.valueClass ?? ''"
+                        >{{ cell.value }}</span
+                      >
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+            <tr class="weather-now__sky">
+              <td colspan="4">
+                <div class="weather-metric weather-metric--wide">
+                  <app-weather-metric-icon metric="sky" [size]="14" />
+                  <span class="weather-metric__lbl">SKY</span>
+                  <span class="weather-metric__val">{{ weather().condition }}</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
 
-        <div class="weather-item">
-          <span class="label">🌡️ Feels Like:</span>
-          <span class="value">{{ weather.temp - 3 | number: '1.0-0' }}°C</span>
-        </div>
-
-        <div class="weather-item">
-          <span class="label">💧 Humidity:</span>
-          <span class="value">{{ weather.humidity | number: '1.0-0' }}%</span>
-        </div>
-
-        <div class="weather-item">
-          <span class="label">💨 Wind:</span>
-          <span class="value"
-            >{{ weather.windSpeed | number: '1.0-0' }} km/h ({{
-              weather.windDir
-            }}, {{ weather.windDeg }}°)</span
-          >
-        </div>
-
-        <div class="weather-item">
-          <span class="label">👁️ Visibility:</span>
-          <span class="value"
-            >{{ weather.visibility | number: '1.1-1' }} km</span
-          >
-        </div>
-
-        <div class="weather-item">
-          <span class="label">☀️ UV Index:</span>
-          <span class="value">{{ weather.uvIndex }}</span>
-        </div>
-
-        <div class="weather-item">
-          <span class="label">🌫️ Air Quality (AQI):</span>
-          <span class="value" [class]="'aqi-' + getAqiLevel(weather.aqi)">{{
-            weather.aqi | number: '1.0-0'
-          }}</span>
-        </div>
-
-        <div class="weather-item">
-          <span class="label">💧 Dew Point:</span>
-          <span class="value">{{ weather.dewPoint | number: '1.0-0' }}°C</span>
-        </div>
-
-        <div class="weather-item">
-          <span class="label">⛅ Condition:</span>
-          <span class="value">{{ weather.condition }}</span>
-        </div>
-      </div>
-
-      <!-- 7-Day Forecast -->
-      <div class="weather-section">
-        <h3 class="weather-title">7-DAY FORECAST</h3>
+      <section class="weather-section">
+        <h3 class="weather-title jp-panel__title--sub">7-DAY FORECAST</h3>
         <table class="jp-table forecast-table">
           <thead>
             <tr>
@@ -82,30 +69,28 @@ import { UiTelemetryService } from '../../../core/services/ui-telemetry.service'
             </tr>
           </thead>
           <tbody>
-            @for (day of forecast; track $index) {
+            @for (day of forecast(); track $index) {
               <tr>
                 <td>{{ day.date | date: 'EEE' }}</td>
                 <td>{{ day.high }}°</td>
                 <td>{{ day.low }}°</td>
                 <td>{{ day.condition }}</td>
-                <td [class]="'aqi-' + getAqiLevel(day.aqi)">{{ day.aqi }}</td>
+                <td [class]="aqiClass(day.aqi)">{{ day.aqi }}</td>
                 <td>{{ day.uvIndex }}</td>
               </tr>
             }
           </tbody>
         </table>
-      </div>
+      </section>
     </div>
   `,
   styles: [
     `
       .win-panel {
         padding: 12px;
-        overflow-y: auto;
-        height: 100%;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
       }
 
       .weather-section {
@@ -113,34 +98,56 @@ import { UiTelemetryService } from '../../../core/services/ui-telemetry.service'
       }
 
       .weather-title {
-        margin: 0 0 8px 0;
-        padding: 4px 0;
-        border-bottom: 1px solid var(--jp-irix-bevel-light);
+        margin: 0 0 6px;
+        padding: 0;
+        border: none;
         font-size: var(--jp-font-sm);
-        color: var(--jp-term-cursor);
-      }
-
-      .weather-item {
-        display: grid;
-        grid-template-columns: 140px 1fr;
-        gap: 8px;
-        padding: 4px 0;
-        font-size: var(--jp-font-xs, 0.75rem);
-        line-height: 1.4;
-      }
-
-      .label {
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         color: var(--jp-irix-text);
-        font-weight: 700;
+        background: transparent;
       }
 
-      .value {
-        color: var(--jp-term-cursor);
-        font-family: var(--jp-font-mono);
+      .weather-now td {
+        padding: 4px 6px;
+        vertical-align: middle;
+      }
+
+      .weather-now__sky td {
+        border-top: 2px solid var(--jp-irix-bevel-dark);
+      }
+
+      .weather-metric {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        font-size: var(--jp-font-sm);
+        line-height: var(--jp-line);
+      }
+
+      .weather-metric--wide .weather-metric__val {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .weather-metric__lbl {
+        flex: 0 0 auto;
+        color: var(--jp-irix-text-dim);
+        font-weight: 700;
+        min-width: 2.75rem;
+      }
+
+      .weather-metric__val {
+        flex: 1 1 auto;
+        color: var(--jp-term-nominal);
+        font-weight: 700;
+        text-align: right;
       }
 
       .forecast-table {
-        font-size: var(--jp-font-xs, 0.75rem);
+        font-size: var(--jp-font-sm);
         width: 100%;
       }
 
@@ -150,46 +157,81 @@ import { UiTelemetryService } from '../../../core/services/ui-telemetry.service'
         text-align: center;
       }
 
-      .forecast-table th {
-        border-bottom: 1px solid var(--jp-irix-bevel-dark);
-      }
-
-      /* AQI Color Coding */
       .aqi-good {
-        color: #22c55e;
+        color: var(--jp-term-nominal);
       }
 
       .aqi-fair {
-        color: #eab308;
+        color: var(--jp-term-info);
       }
 
       .aqi-moderate {
-        color: #f97316;
+        color: var(--jp-term-warn);
       }
 
       .aqi-poor {
-        color: #ef4444;
+        color: var(--jp-term-danger);
       }
 
       .aqi-veryPoor {
-        color: #991b1b;
+        color: var(--jp-term-critical);
       }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WeatherWindowComponent {
-  readonly weatherService = inject(WeatherService);
+  private readonly weatherService = inject(WeatherService);
   readonly telemetry = inject(UiTelemetryService);
 
-  readonly weather = this.weatherService.weather();
-  readonly forecast = this.weatherService.forecast();
+  readonly weather = this.weatherService.weather;
+  readonly forecast = this.weatherService.forecast;
 
-  getAqiLevel(aqi: number): string {
-    if (aqi <= 50) return 'good';
-    if (aqi <= 100) return 'fair';
-    if (aqi <= 150) return 'moderate';
-    if (aqi <= 200) return 'poor';
-    return 'veryPoor';
+  readonly currentMetricRows = computed((): WeatherMetricCell[][] => {
+    const w = this.weather();
+    const feels = Math.round(w.temp - 3);
+    return [
+      [
+        { metric: 'temp', label: 'TEMP', value: `${Math.round(w.temp)}°C` },
+        { metric: 'feels', label: 'FEELS', value: `${feels}°C` },
+        { metric: 'humidity', label: 'HUM', value: `${Math.round(w.humidity)}%` },
+        { metric: 'dew', label: 'DEW', value: `${Math.round(w.dewPoint)}°C` },
+      ],
+      [
+        {
+          metric: 'wind',
+          label: 'WIND',
+          value: `${Math.round(w.windSpeed)} km/h ${w.windDir}`,
+        },
+        {
+          metric: 'visibility',
+          label: 'VIS',
+          value: `${w.visibility.toFixed(1)} km`,
+        },
+        { metric: 'uv', label: 'UV', value: `${w.uvIndex}` },
+        {
+          metric: 'aqi',
+          label: 'AQI',
+          value: `${Math.round(w.aqi)}`,
+          valueClass: this.aqiClass(w.aqi),
+        },
+      ],
+    ];
+  });
+
+  aqiClass(aqi: number): string {
+    if (aqi <= 50) {
+      return 'aqi-good';
+    }
+    if (aqi <= 100) {
+      return 'aqi-fair';
+    }
+    if (aqi <= 150) {
+      return 'aqi-moderate';
+    }
+    if (aqi <= 200) {
+      return 'aqi-poor';
+    }
+    return 'aqi-veryPoor';
   }
 }

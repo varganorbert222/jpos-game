@@ -1,18 +1,25 @@
 <section class="jp-panel cli-panel" data-region="cli">
   <h2 class="jp-panel__title">COMMAND INTERFACE</h2>
 
-  <div class="cli-commands" data-block="command-list">
-    <div class="cli-commands__label jp-info">AVAILABLE COMMANDS</div>
-    <ul class="jp-cli-command-list">
-      @for (c of commands; track c.name) {
-        <li [attr.data-cmd]="c.name">{{ c.usage }} — {{ c.summary }}</li>
+  <div class="cli-next" data-block="next-command">
+    <div class="cli-next__label jp-info">NEXT COMMAND</div>
+    <p class="cli-next__warn jp-warn">
+      Advisory: options below are possibilities only — they may worsen conditions.
+    </p>
+    <ul class="cli-next__list">
+      @for (s of nextSuggestions(); track s.usage) {
+        <li>
+          <span class="cli-next__cmd">{{ s.usage }}</span>
+          <span class="cli-next__note">— {{ s.note }}</span>
+        </li>
       }
     </ul>
   </div>
 
-  <pre class="cli-screen jp-terminal-inset" data-block="output">{{
-    outputText()
-  }}</pre>
+  <pre
+    class="cli-screen jp-terminal-inset jp-terminal-viewport"
+    data-block="output"
+  >{{ outputText() }}</pre>
 
   <div class="cli-prompt" data-block="input">
     <span class="cli-prompt__chev">&gt;</span>
@@ -28,20 +35,20 @@
 
   <div class="cli-actions" data-block="quick-actions">
     <!-- FENCE OPERATIONS -->
-    <button type="button" class="jp-btn" (click)="runAction('reset_fence')">
+    <button type="button" class="jp-btn" (click)="onQuickAction('reset_fence', cmdInput)">
       RESET FENCE
     </button>
 
     <button
       type="button"
       class="jp-btn"
-      (click)="runAction('increase_voltage')"
+      (click)="onQuickAction('increase_voltage', cmdInput)"
     >
       VOLT+ FENCE
     </button>
 
     <!-- SECURITY TEAMS -->
-    <button type="button" class="jp-btn" (click)="runAction('dispatch_patrol')">
+    <button type="button" class="jp-btn" (click)="onQuickAction('dispatch_patrol', cmdInput)">
       PATROL
     </button>
 
@@ -49,18 +56,18 @@
     <button
       type="button"
       class="jp-btn"
-      (click)="runAction('generator_restart')"
+      (click)="onQuickAction('generator_restart', cmdInput)"
     >
       GEN RESTART
     </button>
 
     <!-- CAMERAS -->
-    <button type="button" class="jp-btn" (click)="runAction('cam_reboot')">
+    <button type="button" class="jp-btn" (click)="onQuickAction('cam_reboot', cmdInput)">
       CAM REBOOT
     </button>
 
     <!-- POWER MGMT -->
-    <button type="button" class="jp-btn" (click)="runAction('power_reroute')">
+    <button type="button" class="jp-btn" (click)="onQuickAction('power_reroute', cmdInput)">
       POWER REROUTE
     </button>
 
@@ -68,7 +75,7 @@
     <button
       type="button"
       class="jp-btn"
-      (click)="runAction('emergency_venting')"
+      (click)="onQuickAction('emergency_venting', cmdInput)"
     >
       VENT
     </button>
@@ -76,7 +83,7 @@
     <button
       type="button"
       class="jp-btn"
-      (click)="runAction('lethal_authorization')"
+      (click)="onQuickAction('lethal_authorization', cmdInput)"
     >
       LAUTH
     </button>
@@ -85,7 +92,7 @@
     <button
       type="button"
       class="jp-btn"
-      (click)="runAction('system_hard_reboot')"
+      (click)="onQuickAction('system_hard_reboot', cmdInput)"
     >
       SYSREBOOT
     </button>

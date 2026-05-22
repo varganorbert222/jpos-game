@@ -1,0 +1,114 @@
+// Motif / IRIX-style scrollbars — always reserve gutter; thumb dims when inactive.
+
+:root {
+  --jp-scroll-size: 17px;
+  --jp-scroll-track: #b8c5d4;
+  --jp-scroll-track-inset: #8fa3b8;
+  --jp-scroll-thumb: #d2dce9;
+  --jp-scroll-thumb-hover: #e7f1f9;
+  --jp-scroll-thumb-inactive: #a8b8c8;
+  --jp-scroll-arrow: #4b6a87;
+  --jp-scroll-arrow-inactive: #7a92a8;
+}
+
+@mixin jp-retro-scroll-core {
+  &::-webkit-scrollbar {
+    width: var(--jp-scroll-size);
+    height: var(--jp-scroll-size);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--jp-scroll-track);
+    border-left: 2px solid var(--jp-irix-bevel-dark);
+    border-right: 1px solid var(--jp-irix-bevel-light);
+    box-shadow: inset 1px 0 0 var(--jp-scroll-track-inset);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--jp-scroll-thumb);
+    border: 2px solid;
+    border-color: var(--jp-irix-bevel-light) var(--jp-irix-bevel-dark)
+      var(--jp-irix-bevel-dark) var(--jp-irix-bevel-light);
+    min-height: 24px;
+    min-width: 24px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--jp-scroll-thumb-hover);
+  }
+
+  &::-webkit-scrollbar-button:single-button {
+    background-color: var(--jp-irix-title);
+    border: 2px solid;
+    border-color: var(--jp-irix-bevel-light) var(--jp-irix-bevel-dark)
+      var(--jp-irix-bevel-dark) var(--jp-irix-bevel-light);
+    background-repeat: no-repeat;
+    background-position: center;
+    display: block;
+  }
+
+  &::-webkit-scrollbar-button:single-button:vertical:decrement {
+    height: 15px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%234b6a87' d='M5 0 10 6H0z'/%3E%3C/svg%3E");
+  }
+
+  &::-webkit-scrollbar-button:single-button:vertical:increment {
+    height: 15px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%234b6a87' d='M0 0h10L5 6z'/%3E%3C/svg%3E");
+  }
+
+  &::-webkit-scrollbar-button:single-button:horizontal:decrement {
+    width: 15px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10'%3E%3Cpath fill='%234b6a87' d='M0 5 6 0v10z'/%3E%3C/svg%3E");
+  }
+
+  &::-webkit-scrollbar-button:single-button:horizontal:increment {
+    width: 15px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10'%3E%3Cpath fill='%234b6a87' d='M6 5 0 0v10l6-5z'/%3E%3C/svg%3E");
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: var(--jp-scroll-track);
+    border-top: 1px solid var(--jp-irix-bevel-dark);
+    border-left: 1px solid var(--jp-irix-bevel-dark);
+  }
+}
+
+@mixin jp-retro-scroll-auto {
+  @include jp-retro-scroll-core;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.jp-retro-scroll {
+  @include jp-retro-scroll-core;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+/** Scrollbar appears only when content overflows (e.g. OS window panels). */
+.jp-retro-scroll-auto {
+  @include jp-retro-scroll-auto;
+}
+
+.jp-retro-scroll--both {
+  @include jp-retro-scroll-core;
+  overflow: scroll;
+}
+
+.jp-retro-scroll--inactive {
+  &::-webkit-scrollbar-thumb {
+    background: var(--jp-scroll-thumb-inactive);
+    border-color: var(--jp-irix-bevel-dark) var(--jp-irix-bevel-light)
+      var(--jp-irix-bevel-light) var(--jp-irix-bevel-dark);
+    pointer-events: none;
+  }
+
+  &::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%237a92a8' d='M5 0 10 6H0z'/%3E%3C/svg%3E");
+  }
+
+  &::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%237a92a8' d='M0 0h10L5 6z'/%3E%3C/svg%3E");
+  }
+}
