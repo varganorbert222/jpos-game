@@ -10,7 +10,10 @@ export type BootSectionId =
   | 'window_power'
   | 'window_dino'
   | 'window_terminal'
-  | 'window_weather';
+  | 'window_weather'
+  | 'window_files'
+  | 'window_mail'
+  | 'window_tours';
 
 export type BootSectionState = 'pending' | 'loading' | 'ready';
 
@@ -40,4 +43,7 @@ export const BOOT_SECTION_MESSAGES: Record<BootSectionId, string> = {
   window_dino: 'BOOTING BIO-MONITOR DESKTOP...',
   window_terminal: 'BOOTING JP-OS TERMINAL...',
   window_weather: 'BOOTING WEATHER STATION...',
+  window_files: 'MOUNTING FILE VAULT...',
+  window_mail: 'CONNECTING INGEN MAIL RELAY...',
+  window_tours: 'INITIALIZING TOUR CONTROL BUS...',
 };

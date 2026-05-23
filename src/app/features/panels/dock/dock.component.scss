@@ -32,3 +32,21 @@
   color: var(--jp-term-warn);
   letter-spacing: -2px;
 }
+
+.dock-mail-alert {
+  color: var(--jp-term-critical);
+  font-size: 12px;
+  line-height: 1;
+  animation: jp-dock-mail-pulse 0.9s steps(2, end) infinite;
+}
+
+@keyframes jp-dock-mail-pulse {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.2;
+  }
+}

@@ -5,11 +5,14 @@ export type OsIconName =
   | 'power'
   | 'dino'
   | 'terminal'
+  | 'weather'
+  | 'files'
+  | 'mail'
+  | 'tours'
   | 'warning'
   | 'sensor'
   | 'module'
-  | 'dinosaur'
-  | 'weather';
+  | 'dinosaur';
 
 /** Chunky 16×16 pixel icons — scaled up for visibility */
 @Component({
@@ -137,6 +140,25 @@ export type OsIconName =
           />
           <rect x="5" y="13" width="1" height="2" fill="#8899dd" />
           <rect x="10" y="13" width="1" height="2" fill="#8899dd" />
+        }
+        @case ('files') {
+          <rect x="0" y="0" width="16" height="16" fill="#102030" />
+          <rect x="3" y="2" width="10" height="12" fill="#b0c0d0" stroke="#506070" stroke-width="1" />
+          <rect x="5" y="4" width="6" height="1" fill="#102030" />
+          <rect x="5" y="7" width="6" height="1" fill="#102030" />
+          <rect x="5" y="10" width="4" height="1" fill="#102030" />
+        }
+        @case ('mail') {
+          <rect x="0" y="0" width="16" height="16" fill="#102030" />
+          <rect x="2" y="4" width="12" height="9" fill="#e8f0f8" stroke="#506070" stroke-width="1" />
+          <polygon points="2,4 8,9 14,4" fill="#6ba1d8" />
+        }
+        @case ('tours') {
+          <rect x="0" y="0" width="16" height="16" fill="#102030" />
+          <rect x="2" y="8" width="12" height="5" fill="#c88d33" />
+          <rect x="4" y="6" width="8" height="3" fill="#e8c040" />
+          <rect x="3" y="10" width="3" height="3" fill="#303030" />
+          <rect x="10" y="10" width="3" height="3" fill="#303030" />
         }
       }
     </svg>

@@ -1,0 +1,67 @@
+<div class="jp-files-win" data-app="files">
+  <aside class="jp-files-win__tree" jpRetroScroll>
+    <div class="jp-files-win__path">{{ currentPath() }}</div>
+    @if (currentPath() !== '/') {
+      <button type="button" class="jp-btn jp-files-win__up" (click)="parentPath()">
+        ↑ UP
+      </button>
+    }
+    @for (folder of listing().folders; track folder.path) {
+      <button
+        type="button"
+        class="jp-files-win__item jp-files-win__item--dir"
+        (click)="openFolder(folder.path)"
+      >
+        📁 {{ folder.name }}
+      </button>
+    }
+    @for (file of listing().files; track file.path) {
+      <button
+        type="button"
+        class="jp-files-win__item"
+        [class.jp-files-win__item--active]="selectedPath() === file.path"
+        (click)="selectFile(file)"
+      >
+        @switch (file.kind) {
+          @case ('image') { 🖼 }
+          @case ('video') { ▶ }
+          @default { 📄 }
+        }
+        {{ file.name }}
+      </button>
+    }
+  </aside>
+
+  <section class="jp-files-win__viewer" jpRetroScroll>
+    @if (selectedFile(); as file) {
+      <header class="jp-files-win__meta">
+        <span class="jp-info">{{ file.path }}</span>
+        @if (file.readonly) {
+          <span class="jp-warn">READ-ONLY</span>
+        }
+      </header>
+
+      @switch (file.kind) {
+        @case ('text') {
+          <textarea
+            class="jp-files-win__editor jp-input"
+            [readonly]="file.readonly"
+            [value]="editDraft()"
+            (input)="editDraft.set($any($event.target).value)"
+          ></textarea>
+          @if (!file.readonly) {
+            <button type="button" class="jp-btn" (click)="saveText()">SAVE</button>
+          }
+        }
+        @case ('image') {
+          <img class="jp-files-win__image" [src]="file.content" [alt]="file.name" />
+        }
+        @case ('video') {
+          <app-retro-video-player [basePath]="file.content" />
+        }
+      }
+    } @else {
+      <p class="jp-info">Select a file from the vault.</p>
+    }
+  </section>
+</div>

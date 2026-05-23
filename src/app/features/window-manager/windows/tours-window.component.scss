@@ -1,0 +1,148 @@
+.jp-tour-win {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.jp-tour-win__bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px 8px;
+  border-top: 2px solid var(--jp-irix-bevel-dark);
+  border-left: 2px solid var(--jp-irix-bevel-dark);
+  border-right: 2px solid var(--jp-irix-bevel-light);
+  border-bottom: 2px solid var(--jp-irix-bevel-light);
+  background: var(--jp-irix-title);
+  font-family: var(--jp-font-ui);
+  font-size: var(--jp-font-sm);
+  font-weight: 700;
+}
+
+.jp-tour-win__bar-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.jp-tour-win__msg {
+  margin: 0;
+  padding: 0 4px;
+  font-size: var(--jp-font-sm);
+}
+
+.jp-tour-win__main {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.jp-tour-win__fleet,
+.jp-tour-win__detail {
+  min-height: 0;
+  border-top: 2px solid var(--jp-irix-bevel-dark);
+  border-left: 2px solid var(--jp-irix-bevel-dark);
+  border-right: 2px solid var(--jp-irix-bevel-light);
+  border-bottom: 2px solid var(--jp-irix-bevel-light);
+  background: var(--jp-term-inset-bg);
+  padding: 6px;
+}
+
+.jp-tour-win__veh {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  margin: 0 0 6px;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  font-family: var(--jp-font);
+  font-size: var(--jp-font-sm);
+  font-weight: 700;
+  text-align: left;
+  color: var(--jp-term-inset-fg);
+}
+
+.jp-tour-win__veh--active,
+.jp-tour-win__veh:hover {
+  background: var(--jp-irix-title);
+}
+
+.jp-tour-win__veh-label {
+  color: var(--jp-term-cursor);
+}
+
+.jp-tour-win__veh-zone {
+  font-size: 0.85em;
+  color: var(--jp-irix-text-dim);
+}
+
+.jp-tour-win__detail-title {
+  margin: 0 0 6px;
+  font-family: var(--jp-font-ui);
+  font-size: var(--jp-font-sm);
+  letter-spacing: 0.08em;
+  color: var(--jp-irix-text);
+}
+
+.jp-tour-win__sys {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0 0 10px;
+  font-family: var(--jp-font);
+  font-size: var(--jp-font-sm);
+}
+
+.jp-tour-win__sys dt {
+  color: var(--jp-irix-text-dim);
+}
+
+.jp-tour-win__sys dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.jp-tour-win__route {
+  font-size: 0.9em;
+  line-height: 1.3;
+}
+
+.jp-tour-win__veh-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.jp-tour-win__cam {
+  position: relative;
+}
+
+.jp-tour-win__cam img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: #080c14;
+  border: 2px solid var(--jp-irix-bevel-dark);
+}
+
+.jp-tour-win__cam-hud {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 2px 6px;
+  background: #0a1020c0;
+  color: var(--jp-term-cursor);
+  font-family: var(--jp-font);
+  font-size: var(--jp-font-sm);
+  font-weight: 700;
+}

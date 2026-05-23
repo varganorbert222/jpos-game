@@ -1,6 +1,6 @@
 <div class="jp-system-ready" role="application" aria-label="System halted">
   <div class="jp-system-ready__screen" (click)="focusCmd()">
-    <div class="jp-system-ready__line" jpTerminalPrompt>
+    <div class="jp-system-ready__line" jpTerminalPrompt [jpCaretBlinkSound]="true">
       <span class="jp-terminal-prompt__prefix">SYSTEM READY...</span>
       <input
         #cmd

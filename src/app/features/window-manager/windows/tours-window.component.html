@@ -1,0 +1,79 @@
+<div class="jp-tour-win" data-app="tours">
+  <header class="jp-tour-win__bar">
+    <div>
+      <span class="jp-info">ROUTE:</span> {{ tour.run().routeName }}
+      @if (tour.run().active) {
+        <span class="jp-nominal"> — ACTIVE</span>
+      }
+    </div>
+    <div class="jp-tour-win__bar-actions">
+      <button type="button" class="jp-btn" (click)="tour.startTourRun()">
+        START TOUR
+      </button>
+      <button type="button" class="jp-btn jp-warn" (click)="tour.haltTourRun()">
+        HALT
+      </button>
+    </div>
+  </header>
+  @if (tour.lastMessage()) {
+    <p class="jp-tour-win__msg jp-info">{{ tour.lastMessage() }}</p>
+  }
+
+  <div class="jp-tour-win__main">
+    <aside class="jp-tour-win__fleet" jpRetroScroll>
+      @for (v of tour.vehicles(); track v.id) {
+        <button
+          type="button"
+          class="jp-tour-win__veh"
+          [class.jp-tour-win__veh--active]="tour.selectedVehicleId() === v.id"
+          (click)="tour.selectVehicle(v.id)"
+        >
+          <span class="jp-tour-win__veh-label">{{ v.label }}</span>
+          <span [class]="statusClass(v.status)">{{ v.status | uppercase }}</span>
+          <span class="jp-tour-win__veh-zone">{{ tour.zoneLabel(v.zoneId) }}</span>
+        </button>
+      }
+    </aside>
+
+    @if (tour.selectedVehicle(); as v) {
+      <section class="jp-tour-win__detail" jpRetroScroll>
+        <h3 class="jp-tour-win__detail-title">{{ v.label }} — SYSTEMS</h3>
+        <dl class="jp-tour-win__sys">
+          <dt>STATUS</dt>
+          <dd [class]="statusClass(v.status)">{{ v.status | uppercase }}</dd>
+          <dt>ZONE</dt>
+          <dd>{{ tour.zoneLabel(v.zoneId) }}</dd>
+          <dt>ROUTE</dt>
+          <dd class="jp-tour-win__route">{{ tour.routeLabel(v) }}</dd>
+          <dt>DOORS</dt>
+          <dd>{{ v.doorsLocked ? 'LOCKED' : 'OPEN' }}</dd>
+          <dt>LIGHTS</dt>
+          <dd>{{ v.lightsOn ? 'ON' : 'OFF' }}</dd>
+          <dt>BATTERY</dt>
+          <dd>{{ v.batteryPct }}%</dd>
+          <dt>SIGNAL</dt>
+          <dd [class]="v.signalPct < 50 ? 'jp-warn' : 'jp-nominal'">{{ v.signalPct }}%</dd>
+          <dt>PAX</dt>
+          <dd>{{ v.passengers }}</dd>
+        </dl>
+        <div class="jp-tour-win__veh-actions">
+          <button type="button" class="jp-btn" (click)="tour.toggleDoors(v.id)">
+            TOGGLE DOORS
+          </button>
+          <button type="button" class="jp-btn" (click)="tour.toggleLights(v.id)">
+            TOGGLE LIGHTS
+          </button>
+        </div>
+
+        <h3 class="jp-tour-win__detail-title">DASHCAM</h3>
+        <div class="jp-tour-win__cam">
+          <img
+            [src]="cameraSrc(v.cameraFrame)"
+            [alt]="v.label + ' dashcam'"
+          />
+          <span class="jp-tour-win__cam-hud">LIVE · {{ v.label }}</span>
+        </div>
+      </section>
+    }
+  </div>
+</div>

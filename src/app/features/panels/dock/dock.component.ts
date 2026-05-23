@@ -1,8 +1,17 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
+import { JpMailService } from '../../../core/services/jp-mail.service';
 import { WindowManagerService } from '../../window-manager/window-manager.service';
 
-export type DockApp = 'security' | 'power' | 'dino' | 'terminal' | 'weather';
+export type DockApp =
+  | 'security'
+  | 'power'
+  | 'dino'
+  | 'terminal'
+  | 'weather'
+  | 'files'
+  | 'mail'
+  | 'tours';
 
 @Component({
   selector: 'app-dock',
@@ -14,12 +23,16 @@ export type DockApp = 'security' | 'power' | 'dino' | 'terminal' | 'weather';
 })
 export class DockComponent {
   readonly wm = inject(WindowManagerService);
+  readonly mail = inject(JpMailService);
   readonly apps: { id: DockApp; label: string }[] = [
     { id: 'security', label: 'SECURITY' },
     { id: 'power', label: 'POWER GRID' },
     { id: 'dino', label: 'DINO MON' },
     { id: 'terminal', label: 'TERMINAL' },
     { id: 'weather', label: 'WEATHER' },
+    { id: 'files', label: 'FILES' },
+    { id: 'mail', label: 'MAIL' },
+    { id: 'tours', label: 'TOURS' },
   ];
 
   open(app: DockApp): void {

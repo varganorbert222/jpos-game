@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { JpMailService } from '../../core/services/jp-mail.service';
 import { SystemBootService } from '../../core/services/system-boot.service';
 import type { DockApp } from '../panels/dock/dock.component';
 
@@ -30,11 +31,15 @@ const WINDOW_SIZES: Record<DockApp, { width: number; height: number }> = {
   power: { width: 680, height: 420 },
   dino: { width: 820, height: 520 },
   weather: { width: 600, height: 680 },
+  files: { width: 780, height: 520 },
+  mail: { width: 860, height: 480 },
+  tours: { width: 720, height: 560 },
 };
 
 @Injectable({ providedIn: 'root' })
 export class WindowManagerService {
   private readonly boot = inject(SystemBootService);
+  private readonly mail = inject(JpMailService);
 
   readonly windows = signal<OsWindow[]>([]);
   readonly focusedId = signal<string | null>(null);
@@ -80,12 +85,18 @@ export class WindowManagerService {
       dino: 'BIO_MONITOR',
       terminal: 'JP-OS TERMINAL',
       weather: 'WEATHER_STATION',
+      files: 'JP FILE VAULT',
+      mail: 'JP-MAIL',
+      tours: 'TOUR CONTROL',
     };
     const existing = this.windows().find((w) => w.app === app);
     if (existing) {
       this.focus(existing.id);
       if (existing.minimized) {
         this.restore(existing.id);
+      }
+      if (app === 'mail') {
+        this.mail.clearNewMailIndicator();
       }
       return;
     }
@@ -108,6 +119,9 @@ export class WindowManagerService {
     this.windows.update((list) => [...list, win]);
     this.focusedId.set(win.id);
     this.boot.beginWindowLoad(win.id);
+    if (app === 'mail') {
+      this.mail.clearNewMailIndicator();
+    }
   }
 
   /** Cold boot / hard reboot — no open or minimized windows. */

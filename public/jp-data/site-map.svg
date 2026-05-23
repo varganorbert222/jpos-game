@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200" viewBox="0 0 320 200">
+  <rect width="320" height="200" fill="#0a1020"/>
+  <rect x="8" y="8" width="304" height="184" fill="#102030" stroke="#5fde5f" stroke-width="2"/>
+  <text x="16" y="28" fill="#5fde5f" font-family="monospace" font-size="12" font-weight="bold">ISLA NUBLAR  GRID MAP</text>
+  <rect x="24" y="48" width="80" height="48" fill="#1a3050" stroke="#88a0b8"/>
+  <text x="32" y="76" fill="#e8f0f8" font-family="monospace" font-size="9">HERB N</text>
+  <rect x="120" y="48" width="80" height="48" fill="#1a3050" stroke="#88a0b8"/>
+  <text x="128" y="76" fill="#e8f0f8" font-family="monospace" font-size="9">HERB S</text>
+  <rect x="216" y="48" width="80" height="48" fill="#402020" stroke="#c44"/>
+  <text x="224" y="76" fill="#f88" font-family="monospace" font-size="9">PRED E</text>
+  <rect x="24" y="112" width="80" height="48" fill="#402020" stroke="#c44"/>
+  <text x="32" y="140" fill="#f88" font-family="monospace" font-size="9">PRED W</text>
+  <rect x="120" y="112" width="80" height="48" fill="#203040" stroke="#88a0b8"/>
+  <text x="128" y="140" fill="#e8f0f8" font-family="monospace" font-size="9">RESEARCH</text>
+  <rect x="216" y="112" width="80" height="48" fill="#304020" stroke="#5a8"/>
+  <text x="224" y="140" fill="#8f8" font-family="monospace" font-size="9">VISITOR</text>
+</svg>

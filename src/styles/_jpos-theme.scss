@@ -41,7 +41,7 @@
   --jp-status-h: 24px;
   --jp-dock-h: 44px;
   --jp-icon-size: 24px;
-  --jp-cursor-blink-ms: 1060;
+  --jp-cursor-blink-ms: 1060ms;
 }
 
 @keyframes jp-cursor-blink {
@@ -139,7 +139,6 @@
   box-sizing: border-box;
   @include irix-sunken;
   background: var(--jp-term-inset-bg);
-  cursor: text;
 }
 
 .jp-terminal-prompt__input {
@@ -245,7 +244,6 @@
   font-family: var(--jp-font-ui);
   font-size: var(--jp-font-sm);
   font-weight: 700;
-  cursor: move;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -311,7 +309,6 @@
   font-size: 16px;
   line-height: 1;
   font-weight: 700;
-  cursor: pointer;
 }
 
 .jp-os-window__ctrl:active {
@@ -384,7 +381,6 @@
   font-size: var(--jp-font-sm);
   font-weight: 700;
   padding: 6px 12px;
-  cursor: pointer;
 }
 
 .jp-btn:active {
@@ -398,7 +394,6 @@
 
 .jp-btn:disabled,
 .jp-btn[disabled] {
-  cursor: default;
   pointer-events: none;
   color: var(--jp-irix-text-dim);
   background: var(--jp-irix-window);

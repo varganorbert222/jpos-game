@@ -1,0 +1,85 @@
+.jp-files-win {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.jp-files-win__tree,
+.jp-files-win__viewer {
+  min-height: 0;
+  border-top: 2px solid var(--jp-irix-bevel-dark);
+  border-left: 2px solid var(--jp-irix-bevel-dark);
+  border-right: 2px solid var(--jp-irix-bevel-light);
+  border-bottom: 2px solid var(--jp-irix-bevel-light);
+  background: var(--jp-term-inset-bg);
+  padding: 6px;
+}
+
+.jp-files-win__path {
+  margin-bottom: 6px;
+  font-family: var(--jp-font);
+  font-size: var(--jp-font-sm);
+  color: var(--jp-term-cursor);
+}
+
+.jp-files-win__up {
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.jp-files-win__item {
+  display: block;
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 4px 6px;
+  border: none;
+  background: transparent;
+  color: var(--jp-term-inset-fg);
+  font-family: var(--jp-font);
+  font-size: var(--jp-font-sm);
+  font-weight: 700;
+  text-align: left;
+}
+
+.jp-files-win__item--active,
+.jp-files-win__item:hover {
+  background: var(--jp-irix-title-active);
+  color: var(--jp-irix-text);
+}
+
+.jp-files-win__item--dir {
+  color: var(--jp-term-nominal);
+}
+
+.jp-files-win__viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jp-files-win__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.jp-files-win__editor {
+  flex: 1 1 auto;
+  min-height: 200px;
+  width: 100%;
+  resize: none;
+  font-family: var(--jp-font);
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+.jp-files-win__image {
+  max-width: 100%;
+  image-rendering: pixelated;
+  border: 2px solid var(--jp-irix-bevel-dark);
+}

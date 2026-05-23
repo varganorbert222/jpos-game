@@ -13,6 +13,9 @@
     >
       <app-os-icon [name]="a.id" />
       <span>{{ a.label }}</span>
+      @if (a.id === 'mail' && mail.hasNewMail() && !isOpen(a.id)) {
+        <span class="dock-mail-alert" title="New mail" aria-label="New mail">●</span>
+      }
       @if (isOpen(a.id)) {
         <span class="dock-indicator dock-indicator--active" aria-hidden="true"
           >■</span

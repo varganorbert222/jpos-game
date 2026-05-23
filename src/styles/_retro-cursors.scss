@@ -1,0 +1,623 @@
+// JP-OS retro cursors — light PNG pack in public/cursors/light/…
+// Run scripts/normalize-cursors.ps1 after dropping assets in public/cursors_import
+
+@use "sass:math";
+
+$jp-cursor-base: "/cursors/light";
+// Windows uses intrinsic PNG size (CSS size hints are ignored). normalize-cursors.ps1
+// scales assets to fit this cap; hotspots below use source art dimensions.
+$jp-cursor-max-px: 32;
+
+$cursor-fallback-default: default;
+$cursor-fallback-pointer: pointer;
+$cursor-fallback-text: text;
+$cursor-fallback-move: move;
+$cursor-fallback-grab: grab;
+$cursor-fallback-grabbing: grabbing;
+$cursor-fallback-not-allowed: not-allowed;
+$cursor-fallback-wait: wait;
+$cursor-fallback-help: help;
+$cursor-fallback-crosshair: crosshair;
+$cursor-fallback-col: col-resize;
+$cursor-fallback-row: row-resize;
+$cursor-fallback-n: n-resize;
+$cursor-fallback-s: s-resize;
+$cursor-fallback-e: e-resize;
+$cursor-fallback-w: w-resize;
+$cursor-fallback-ne: ne-resize;
+$cursor-fallback-nw: nw-resize;
+$cursor-fallback-se: se-resize;
+$cursor-fallback-sw: sw-resize;
+
+@function jp-cursor-fit-scale($w, $h) {
+  @return math.div($jp-cursor-max-px, math.max($w, $h));
+}
+
+// Hotspot from source art coords; PNGs are pre-scaled to <= 32px (see normalize-cursors.ps1).
+@mixin jp-cursor-url($category, $file, $x, $y, $w, $h, $fallback) {
+  $scale: jp-cursor-fit-scale($w, $h);
+  $dx: math.round($x * $scale);
+  $dy: math.round($y * $scale);
+  cursor: url("#{$jp-cursor-base}/#{$category}/#{$file}.png") #{$dx} #{$dy},
+    #{$fallback};
+}
+
+@mixin jp-cursor($category, $file, $x, $y, $w, $h, $fallback) {
+  @include jp-cursor-url($category, $file, $x, $y, $w, $h, $fallback);
+}
+
+// --- Asset map (name → role) ---
+// default      → arrows/arrow1
+// pointer      → hands/hand1
+// text         → text/text1
+// move         → crosses_and_resizers/move
+// grab         → hands/hand2
+// grabbing     → hands/hand_drag1
+// not-allowed  → not_allowed/not_allowed_thin
+// wait         → hourglasses/hourglass_mid
+// help         → arrows/arrow4 (no dedicated help glyph in pack)
+// crosshair    → crosses_and_resizers/cross
+// col-resize   → crosses_and_resizers/horizontal_resize
+// row-resize   → crosses_and_resizers/vertical_resize
+// n/s          → vertical_resize (top/bottom hotspot)
+// e/w          → horizontal_resize
+// ne/se        → diagonal_right_resize
+// nw/sw        → diagonal_left_resize
+// zoom-in/out  → zooms/zoom_in | zoom_out
+
+html,
+body,
+.viewport,
+.frame-outer,
+.frame-inner,
+app-root,
+.jp-boot-screen,
+.jp-login-screen,
+.jp-login-screen__panel,
+.jp-terminal-inset,
+.jp-terminal-prompt,
+.jp-terminal-viewport,
+.jp-os-window__body .jp-terminal,
+.jp-files-win__editor,
+.jp-game-over__stats,
+.jp-panel,
+.desktop {
+  @include jp-cursor(arrows, arrow1, 0, 0, 36, 57, $cursor-fallback-default);
+}
+
+a[href],
+button:not(:disabled),
+label,
+select:not(:disabled),
+summary,
+[role="button"],
+[role="link"],
+[role="tab"],
+.jp-btn:not(:disabled),
+.jp-dock-btn,
+.jp-os-window__ctrl,
+.jp-game-over__close,
+.jp-files-win__item,
+.jp-files-win__up,
+.jp-mail-win__row,
+.jp-mail-win__folder,
+.jp-tour-win__veh,
+.jp-login-screen__submit,
+.jp-login-screen__shutdown,
+.jp-login-screen__label,
+.jp-login-screen__field,
+.jp-terminal-prompt__prefix,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+.cursor-pointer {
+  @include jp-cursor(hands, hand1, 18, 8, 51, 63, $cursor-fallback-pointer);
+}
+
+input:not([type="button"]):not([type="submit"]):not([type="reset"]):not(
+    [type="checkbox"]
+  ):not([type="radio"]):not([type="range"]):not([type="file"]),
+textarea,
+[contenteditable="true"],
+.jp-terminal-prompt__entry,
+.jp-terminal-prompt__input,
+.jp-files-win__editor,
+.jp-login-screen__input {
+  @include jp-cursor(text, text1, 13, 0, 27, 69, $cursor-fallback-text);
+}
+
+.jp-os-window__chrome {
+  @include jp-cursor(
+    crosses_and_resizers,
+    move,
+    34,
+    34,
+    69,
+    69,
+    $cursor-fallback-move
+  );
+}
+
+.jp-os-window__chrome:active {
+  @include jp-cursor(hands, hand_drag1, 25, 25, 51, 51, $cursor-fallback-grabbing);
+}
+
+:disabled,
+[disabled],
+.jp-btn:disabled,
+.jp-btn[disabled],
+.jp-btn:disabled:hover,
+.jp-login-screen__submit:disabled,
+.jp-login-screen__shutdown:disabled,
+area[disabled],
+fieldset:disabled,
+.cursor-not-allowed {
+  @include jp-cursor(
+    not_allowed,
+    not_allowed_thin,
+    36,
+    36,
+    72,
+    72,
+    $cursor-fallback-not-allowed
+  );
+}
+
+.jp-boot-screen,
+.jp-section-loader__overlay,
+.jp-cursor-wait,
+.jp-cursor-wait * {
+  @include jp-cursor(
+    hourglasses,
+    hourglass_mid,
+    24,
+    33,
+    48,
+    66,
+    $cursor-fallback-wait
+  );
+}
+
+.jp-help,
+.cursor-help {
+  @include jp-cursor(arrows, arrow4, 0, 0, 39, 39, $cursor-fallback-help);
+}
+
+.cursor-n-resize {
+  @include jp-cursor(
+    crosses_and_resizers,
+    vertical_resize,
+    13,
+    4,
+    27,
+    69,
+    $cursor-fallback-n
+  );
+}
+
+.cursor-s-resize {
+  @include jp-cursor(
+    crosses_and_resizers,
+    vertical_resize,
+    13,
+    65,
+    27,
+    69,
+    $cursor-fallback-s
+  );
+}
+
+.cursor-e-resize {
+  @include jp-cursor(
+    crosses_and_resizers,
+    horizontal_resize,
+    65,
+    13,
+    69,
+    27,
+    $cursor-fallback-e
+  );
+}
+
+.cursor-w-resize {
+  @include jp-cursor(
+    crosses_and_resizers,
+    horizontal_resize,
+    4,
+    13,
+    69,
+    27,
+    $cursor-fallback-w
+  );
+}
+
+.cursor-ne-resize {
+  @include jp-cursor(
+    crosses_and_resizers,
+    diagonal_right_resize,
+    42,
+    8,
+    51,
+    51,
+    $cursor-fallback-ne
+  );
+}
+
+.cursor-nw-resize {
+  @include jp-cursor(
+    crosses_and_resizers,
+    diagonal_left_resize,
+    8,
+    8,
+    51,
+    51,
+    $cursor-fallback-nw
+  );
+}
+
+.cursor-se-resize {
+  @include jp-cursor(
+    crosses_and_resizers,
+    diagonal_right_resize,
+    42,
+    42,
+    51,
+    51,
+    $cursor-fallback-se
+  );
+}
+
+.cursor-sw-resize {
+  @include jp-cursor(
+    crosses_and_resizers,
+    diagonal_left_resize,
+    8,
+    42,
+    51,
+    51,
+    $cursor-fallback-sw
+  );
+}
+
+.cursor-col-resize,
+.col-resize {
+  @include jp-cursor(
+    crosses_and_resizers,
+    horizontal_resize,
+    34,
+    13,
+    69,
+    27,
+    $cursor-fallback-col
+  );
+}
+
+.cursor-row-resize,
+.row-resize {
+  @include jp-cursor(
+    crosses_and_resizers,
+    vertical_resize,
+    13,
+    34,
+    27,
+    69,
+    $cursor-fallback-row
+  );
+}
+
+.cursor-crosshair,
+.crosshair {
+  @include jp-cursor(
+    crosses_and_resizers,
+    cross,
+    34,
+    34,
+    69,
+    69,
+    $cursor-fallback-crosshair
+  );
+}
+
+.cursor-grab {
+  @include jp-cursor(hands, hand2, 25, 8, 51, 63, $cursor-fallback-grab);
+}
+
+.cursor-grabbing {
+  @include jp-cursor(hands, hand_drag1, 25, 25, 51, 51, $cursor-fallback-grabbing);
+}
+
+.cursor-move {
+  @include jp-cursor(
+    crosses_and_resizers,
+    move,
+    34,
+    34,
+    69,
+    69,
+    $cursor-fallback-move
+  );
+}
+
+[style*="cursor: pointer"],
+[style*="cursor:pointer"] {
+  @include jp-cursor(hands, hand1, 18, 8, 51, 63, $cursor-fallback-pointer);
+}
+
+[style*="cursor: move"],
+[style*="cursor:move"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    move,
+    34,
+    34,
+    69,
+    69,
+    $cursor-fallback-move
+  );
+}
+
+[style*="cursor: text"],
+[style*="cursor:text"] {
+  @include jp-cursor(text, text1, 13, 0, 27, 69, $cursor-fallback-text);
+}
+
+[style*="cursor: wait"],
+[style*="cursor:wait"],
+[style*="cursor: progress"],
+[style*="cursor:progress"] {
+  @include jp-cursor(
+    hourglasses,
+    hourglass_mid,
+    24,
+    33,
+    48,
+    66,
+    $cursor-fallback-wait
+  );
+}
+
+[style*="cursor: not-allowed"],
+[style*="cursor:not-allowed"],
+[style*="cursor: no-drop"],
+[style*="cursor:no-drop"] {
+  @include jp-cursor(
+    not_allowed,
+    not_allowed_thin,
+    36,
+    36,
+    72,
+    72,
+    $cursor-fallback-not-allowed
+  );
+}
+
+[style*="cursor: grab"],
+[style*="cursor:grab"] {
+  @include jp-cursor(hands, hand2, 25, 8, 51, 63, $cursor-fallback-grab);
+}
+
+[style*="cursor: grabbing"],
+[style*="cursor:grabbing"] {
+  @include jp-cursor(hands, hand_drag1, 25, 25, 51, 51, $cursor-fallback-grabbing);
+}
+
+[style*="cursor: help"],
+[style*="cursor:help"] {
+  @include jp-cursor(arrows, arrow4, 0, 0, 39, 39, $cursor-fallback-help);
+}
+
+[style*="cursor: crosshair"],
+[style*="cursor:crosshair"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    cross,
+    34,
+    34,
+    69,
+    69,
+    $cursor-fallback-crosshair
+  );
+}
+
+[style*="cursor: n-resize"],
+[style*="cursor:n-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    vertical_resize,
+    13,
+    4,
+    27,
+    69,
+    $cursor-fallback-n
+  );
+}
+
+[style*="cursor: s-resize"],
+[style*="cursor:s-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    vertical_resize,
+    13,
+    65,
+    27,
+    69,
+    $cursor-fallback-s
+  );
+}
+
+[style*="cursor: e-resize"],
+[style*="cursor:e-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    horizontal_resize,
+    65,
+    13,
+    69,
+    27,
+    $cursor-fallback-e
+  );
+}
+
+[style*="cursor: w-resize"],
+[style*="cursor:w-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    horizontal_resize,
+    4,
+    13,
+    69,
+    27,
+    $cursor-fallback-w
+  );
+}
+
+[style*="cursor: ne-resize"],
+[style*="cursor:ne-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    diagonal_right_resize,
+    42,
+    8,
+    51,
+    51,
+    $cursor-fallback-ne
+  );
+}
+
+[style*="cursor: nw-resize"],
+[style*="cursor:nw-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    diagonal_left_resize,
+    8,
+    8,
+    51,
+    51,
+    $cursor-fallback-nw
+  );
+}
+
+[style*="cursor: se-resize"],
+[style*="cursor:se-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    diagonal_right_resize,
+    42,
+    42,
+    51,
+    51,
+    $cursor-fallback-se
+  );
+}
+
+[style*="cursor: sw-resize"],
+[style*="cursor:sw-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    diagonal_left_resize,
+    8,
+    42,
+    51,
+    51,
+    $cursor-fallback-sw
+  );
+}
+
+[style*="cursor: col-resize"],
+[style*="cursor:col-resize"],
+[style*="cursor: ew-resize"],
+[style*="cursor:ew-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    horizontal_resize,
+    34,
+    13,
+    69,
+    27,
+    $cursor-fallback-col
+  );
+}
+
+[style*="cursor: row-resize"],
+[style*="cursor:row-resize"],
+[style*="cursor: ns-resize"],
+[style*="cursor:ns-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    vertical_resize,
+    13,
+    34,
+    27,
+    69,
+    $cursor-fallback-row
+  );
+}
+
+[style*="cursor: all-resize"],
+[style*="cursor:all-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    move,
+    34,
+    34,
+    69,
+    69,
+    $cursor-fallback-move
+  );
+}
+
+[style*="cursor: nesw-resize"],
+[style*="cursor:nesw-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    diagonal_right_resize,
+    42,
+    42,
+    51,
+    51,
+    $cursor-fallback-se
+  );
+}
+
+[style*="cursor: nwse-resize"],
+[style*="cursor:nwse-resize"] {
+  @include jp-cursor(
+    crosses_and_resizers,
+    diagonal_left_resize,
+    8,
+    8,
+    51,
+    51,
+    $cursor-fallback-nw
+  );
+}
+
+[style*="cursor: alias"],
+[style*="cursor:alias"],
+[style*="cursor: copy"],
+[style*="cursor:copy"] {
+  @include jp-cursor(hands, hand1, 18, 8, 51, 63, $cursor-fallback-pointer);
+}
+
+[style*="cursor: zoom-in"],
+[style*="cursor:zoom-in"] {
+  @include jp-cursor(zooms, zoom_in, 37, 37, 75, 75, $cursor-fallback-crosshair);
+}
+
+[style*="cursor: zoom-out"],
+[style*="cursor:zoom-out"] {
+  @include jp-cursor(zooms, zoom_out, 37, 37, 75, 75, $cursor-fallback-crosshair);
+}
+
+[style*="cursor: none"],
+[style*="cursor:none"] {
+  cursor: none;
+}
+
+// Halt / system-ready: keyboard only — hide mouse pointer on the full screen
+.jp-system-ready,
+.jp-system-ready * {
+  cursor: none !important;
+}

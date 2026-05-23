@@ -11,7 +11,7 @@ import {
 import { DesktopComponent } from '../desktop/desktop.component';
 import { CrtOverlayComponent } from '../../rendering/crt-overlay/crt-overlay.component';
 import { SimulationBridgeService } from '../../core/services/simulation-bridge.service';
-import { AudioService } from '../../core/services/audio.service';
+import { GameFeedbackService } from '../../core/services/game-feedback.service';
 import { DisplayScaleService } from '../../core/services/display-scale.service';
 import { SystemBootService } from '../../core/services/system-boot.service';
 import { BootScreenComponent } from '../../shared/boot/boot-screen.component';
@@ -40,7 +40,7 @@ import { GameOverModalComponent } from '../../shared/game-over/game-over-modal.c
 })
 export class GameShellComponent implements OnInit, OnDestroy {
   private readonly sim = inject(SimulationBridgeService);
-  private readonly audio = inject(AudioService);
+  private readonly feedback = inject(GameFeedbackService);
   readonly display = inject(DisplayScaleService);
   readonly boot = inject(SystemBootService);
   readonly auth = inject(AuthService);
@@ -60,11 +60,7 @@ export class GameShellComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
-    this.sim.onAudio((alerts) => {
-      for (const a of alerts) {
-        this.audio.playAlert(a);
-      }
-    });
+    this.feedback.connectSimAudio();
   }
 
   ngOnDestroy(): void {

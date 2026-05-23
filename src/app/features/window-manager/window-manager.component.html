@@ -19,7 +19,13 @@
       >
         <div class="jp-os-window__left">
           <app-os-icon [name]="iconFor(w.app)" />
-          <span class="jp-os-window__title">{{ w.title }}</span>
+          <span
+            class="jp-os-window__title"
+            [class.jp-os-window__title--mail-alert]="
+              w.app === 'mail' && mail.hasNewMail()
+            "
+            >{{ windowTitle(w.app, w.title) }}</span
+          >
         </div>
         <div class="jp-os-window__controls">
           <button
@@ -62,6 +68,15 @@
             }
             @case ("weather") {
               <app-weather-window />
+            }
+            @case ("files") {
+              <app-files-window />
+            }
+            @case ("mail") {
+              <app-mail-window />
+            }
+            @case ("tours") {
+              <app-tours-window />
             }
           }
         </app-jp-section-loader>

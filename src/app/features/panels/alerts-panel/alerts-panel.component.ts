@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { UiTelemetryService } from '../../../core/services/ui-telemetry.service';
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { JpStatusIconComponent, type JpStatusKind } from '../../../shared/jp-status-icon/jp-status-icon.component';
-import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
+import { GameFeedbackService } from '../../../core/services/game-feedback.service';
 import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
 import { SectionLoaderComponent } from '../../../shared/boot/section-loader.component';
 
@@ -15,14 +15,11 @@ import { SectionLoaderComponent } from '../../../shared/boot/section-loader.comp
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlertsPanelComponent {
-  private readonly sim = inject(SimulationBridgeService);
+  private readonly feedback = inject(GameFeedbackService);
   readonly telemetry = inject(UiTelemetryService);
 
-  readonly alerts = computed(() => {
-    const s = this.sim.snapshot();
-    return s?.alertEntries.slice(-12).reverse() ?? [];
-  });
-  readonly events = computed(() => this.sim.snapshot()?.activeEvents ?? []);
+  readonly alerts = this.feedback.displayedAlerts;
+  readonly events = this.feedback.displayedEvents;
 
   alertIcon(msg: string): JpStatusKind {
     const u = msg.toUpperCase();

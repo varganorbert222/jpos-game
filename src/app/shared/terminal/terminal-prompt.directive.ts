@@ -2,9 +2,11 @@ import {
   AfterViewInit,
   Directive,
   ElementRef,
+  Input,
   OnDestroy,
   inject,
 } from '@angular/core';
+import { AudioService } from '../../core/services/audio.service';
 
 /** Typed width in ch; visible field chrome is on .jp-terminal-prompt__entry. */
 const MIN_TYPED_CH = 0;
@@ -19,10 +21,20 @@ const MIN_TYPED_CH = 0;
 })
 export class TerminalPromptDirective implements AfterViewInit, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly audio = inject(AudioService);
+
+  /** When true, plays a short tick on each block-cursor blink (system-ready only). */
+  @Input() jpCaretBlinkSound = false;
+
   private input?: HTMLInputElement;
   private cursor?: HTMLElement;
   private observer?: MutationObserver;
   private cursorWasHidden = true;
+  private readonly onCursorBlink = (): void => {
+    if (this.jpCaretBlinkSound && this.cursor && !this.cursor.hidden) {
+      this.audio.playCaretBlink();
+    }
+  };
   private readonly onInput = (): void => this.sync();
   private readonly onKeydown = (event: KeyboardEvent): void => {
     if (event.key === 'Enter') {
@@ -60,6 +72,7 @@ export class TerminalPromptDirective implements AfterViewInit, OnDestroy {
     this.input?.removeEventListener('input', this.onInput);
     this.input?.removeEventListener('focus', this.onInput);
     this.input?.removeEventListener('keydown', this.onKeydown);
+    this.cursor?.removeEventListener('animationiteration', this.onCursorBlink);
   }
 
   private wrapEntry(): void {
@@ -94,6 +107,8 @@ export class TerminalPromptDirective implements AfterViewInit, OnDestroy {
       entry.append(cursor);
     }
     this.cursor = cursor;
+    cursor.removeEventListener('animationiteration', this.onCursorBlink);
+    cursor.addEventListener('animationiteration', this.onCursorBlink);
   }
 
   private sync(): void {

@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap");
 @import "./styles/jpos-theme";
+@import "./styles/retro-cursors";
 
 /* 2026 Modern CSS Reset */
 html {
@@ -76,7 +77,6 @@ select {
 }
 
 button {
-  cursor: pointer;
   appearance: none;
 }
 

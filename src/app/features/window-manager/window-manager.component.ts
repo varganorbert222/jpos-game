@@ -13,6 +13,10 @@ import { PowerWindowComponent } from './windows/power-window.component';
 import { DinoWindowComponent } from './windows/dino-window.component';
 import { TerminalWindowComponent } from './windows/terminal-window.component';
 import { WeatherWindowComponent } from './windows/weather-window.component';
+import { FilesWindowComponent } from './windows/files-window.component';
+import { MailWindowComponent } from './windows/mail-window.component';
+import { ToursWindowComponent } from './windows/tours-window.component';
+import { JpMailService } from '../../core/services/jp-mail.service';
 import { SectionLoaderComponent } from '../../shared/boot/section-loader.component';
 
 @Component({
@@ -26,6 +30,9 @@ import { SectionLoaderComponent } from '../../shared/boot/section-loader.compone
     DinoWindowComponent,
     TerminalWindowComponent,
     WeatherWindowComponent,
+    FilesWindowComponent,
+    MailWindowComponent,
+    ToursWindowComponent,
   ],
   templateUrl: './window-manager.component.html',
   styleUrl: './window-manager.component.scss',
@@ -33,6 +40,7 @@ import { SectionLoaderComponent } from '../../shared/boot/section-loader.compone
 })
 export class WindowManagerComponent {
   readonly wm = inject(WindowManagerService);
+  readonly mail = inject(JpMailService);
   private readonly display = inject(DisplayScaleService);
   private drag: {
     id: string;
@@ -42,10 +50,15 @@ export class WindowManagerComponent {
     origY: number;
   } | null = null;
 
-  iconFor(
-    app: DockApp,
-  ): 'security' | 'power' | 'dino' | 'terminal' | 'weather' {
+  iconFor(app: DockApp): DockApp {
     return app;
+  }
+
+  windowTitle(app: DockApp, title: string): string {
+    if (app === 'mail' && this.mail.hasNewMail()) {
+      return `${title} ● NEW`;
+    }
+    return title;
   }
 
   startDrag(id: string, x: number, y: number, event: MouseEvent): void {

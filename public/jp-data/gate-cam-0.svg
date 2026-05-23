@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
+  <rect width="320" height="180" fill="#080c14"/>
+  <rect x="40" y="60" width="240" height="80" fill="#1a2030" stroke="#5fde5f"/>
+  <text x="16" y="24" fill="#5fde5f" font-family="monospace" font-size="11">GATE CAM  FRAME A</text>
+  <rect x="120" y="85" width="80" height="50" fill="#0f180f" stroke="#3a5a3a"/>
+</svg>

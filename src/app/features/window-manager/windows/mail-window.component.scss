@@ -1,0 +1,94 @@
+.jp-mail-win {
+  display: grid;
+  grid-template-columns: 100px 220px 1fr;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.jp-mail-win__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.jp-mail-win__folder {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.jp-mail-win__folder--active {
+  background: var(--jp-irix-title-active);
+}
+
+.jp-mail-win__badge {
+  color: var(--jp-term-critical);
+  font-weight: 700;
+}
+
+.jp-mail-win__list,
+.jp-mail-win__body {
+  min-height: 0;
+  border-top: 2px solid var(--jp-irix-bevel-dark);
+  border-left: 2px solid var(--jp-irix-bevel-dark);
+  border-right: 2px solid var(--jp-irix-bevel-light);
+  border-bottom: 2px solid var(--jp-irix-bevel-light);
+  background: var(--jp-term-inset-bg);
+  padding: 6px;
+}
+
+.jp-mail-win__row {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  color: var(--jp-term-inset-fg);
+  font-family: var(--jp-font);
+  font-size: var(--jp-font-sm);
+  font-weight: 700;
+  text-align: left;
+}
+
+.jp-mail-win__row--unread .jp-mail-win__subj {
+  color: var(--jp-term-cursor);
+}
+
+.jp-mail-win__row--active,
+.jp-mail-win__row:hover {
+  background: var(--jp-irix-title);
+}
+
+.jp-mail-win__from {
+  font-size: 0.85em;
+  color: var(--jp-irix-text-dim);
+}
+
+.jp-mail-win__text {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: var(--jp-font);
+  font-size: var(--jp-font-base);
+  line-height: 1.35;
+  color: var(--jp-term-inset-fg);
+}
+
+.jp-mail-win__head {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--jp-irix-bevel-dark);
+}
+
+.jp-mail-win__actions {
+  margin-top: 4px;
+}
+
+.jp-mail-win__empty {
+  padding: 8px;
+}
