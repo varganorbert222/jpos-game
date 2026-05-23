@@ -5,7 +5,7 @@
 
 $jp-cursor-base: "/cursors/light";
 // Windows uses intrinsic PNG size (CSS size hints are ignored). normalize-cursors.ps1
-// scales assets to fit this cap; hotspots below use source art dimensions.
+// scales art to fit, then pads every asset to a 32×32 ARGB canvas (top-left).
 $jp-cursor-max-px: 32;
 
 $cursor-fallback-default: default;
@@ -165,22 +165,8 @@ fieldset:disabled,
   );
 }
 
-.jp-boot-screen,
-.jp-section-loader__overlay,
-.jp-cursor-wait,
-.jp-cursor-wait * {
-  @include jp-cursor(
-    hourglasses,
-    hourglass_mid,
-    24,
-    33,
-    48,
-    66,
-    $cursor-fallback-wait
-  );
-}
-
-.jp-help,
+// Wait / loading cursor: animated hourglass (start → mid → end) via WaitCursorAnimationService.
+// Static mid frame kept for inline style="cursor: wait" only.
 .cursor-help {
   @include jp-cursor(arrows, arrow4, 0, 0, 39, 39, $cursor-fallback-help);
 }

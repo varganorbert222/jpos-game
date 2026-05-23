@@ -171,8 +171,15 @@
   letter-spacing: 0.06em;
 }
 
-.jp-login-screen__input {
+.jp-login-screen__prompt {
   width: 100%;
+}
+
+.jp-login-screen .jp-terminal-prompt__entry {
+  width: 100%;
+}
+
+.jp-login-screen__input {
   box-sizing: border-box;
 }
 

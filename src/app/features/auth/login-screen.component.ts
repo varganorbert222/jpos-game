@@ -7,9 +7,12 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { SystemBootService } from '../../core/services/system-boot.service';
 
+import { TerminalPromptDirective } from '../../shared/terminal/terminal-prompt.directive';
+
 @Component({
   selector: 'app-login-screen',
   standalone: true,
+  imports: [TerminalPromptDirective],
   templateUrl: './login-screen.component.html',
   styleUrl: './login-screen.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -13,38 +13,44 @@
 
     <label class="jp-login-screen__field">
       <span class="jp-login-screen__label">USERNAME</span>
-      <input
-        class="jp-input jp-login-screen__input"
-        type="text"
-        name="jp-operator-id"
-        autocomplete="off"
-        autocapitalize="off"
-        autocorrect="off"
-        spellcheck="false"
-        data-lpignore="true"
-        data-1p-ignore="true"
-        data-form-type="other"
-        [value]="username()"
-        (input)="onUsernameInput($event)"
-      />
+      <div class="jp-login-screen__prompt" jpTerminalPrompt>
+        <input
+          class="jp-login-screen__input"
+          type="text"
+          name="jp-operator-id"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          data-lpignore="true"
+          data-1p-ignore="true"
+          data-form-type="other"
+          [disabled]="submitting()"
+          [value]="username()"
+          (input)="onUsernameInput($event)"
+        />
+      </div>
     </label>
 
     <label class="jp-login-screen__field">
       <span class="jp-login-screen__label">PASSWORD</span>
-      <input
-        class="jp-input jp-login-screen__input jp-login-screen__input--secret"
-        type="text"
-        name="jp-operator-secret"
-        autocomplete="off"
-        autocapitalize="off"
-        autocorrect="off"
-        spellcheck="false"
-        data-lpignore="true"
-        data-1p-ignore="true"
-        data-form-type="other"
-        [value]="password()"
-        (input)="onPasswordInput($event)"
-      />
+      <div class="jp-login-screen__prompt" jpTerminalPrompt>
+        <input
+          class="jp-login-screen__input jp-login-screen__input--secret"
+          type="text"
+          name="jp-operator-secret"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          data-lpignore="true"
+          data-1p-ignore="true"
+          data-form-type="other"
+          [disabled]="submitting()"
+          [value]="password()"
+          (input)="onPasswordInput($event)"
+        />
+      </div>
     </label>
 
     <p

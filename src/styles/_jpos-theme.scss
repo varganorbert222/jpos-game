@@ -99,6 +99,13 @@
   height: 1.1em;
   vertical-align: text-bottom;
   background-color: var(--jp-term-cursor);
+}
+
+.jp-terminal-cursor[hidden] {
+  display: none !important;
+}
+
+.jp-terminal-cursor.jp-terminal-cursor--active {
   animation: jp-cursor-blink var(--jp-cursor-blink-ms) steps(2, end) infinite;
 }
 
@@ -121,7 +128,6 @@
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  padding-bottom: 6px;
 }
 
 .jp-terminal-prompt__prefix::after {

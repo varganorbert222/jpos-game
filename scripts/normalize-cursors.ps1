@@ -28,18 +28,19 @@ function Resize-CursorPngInPlace {
   $img = [System.Drawing.Image]::FromFile($Path)
   try {
     $maxDim = [Math]::Max($img.Width, $img.Height)
-    if ($maxDim -le $MaxPx) { return }
-
-    $scale = $MaxPx / $maxDim
+    $scale = if ($maxDim -gt $MaxPx) { $MaxPx / $maxDim } else { 1.0 }
     $newW = [Math]::Max(1, [int][Math]::Round($img.Width * $scale))
     $newH = [Math]::Max(1, [int][Math]::Round($img.Height * $scale))
-    $bmp = New-Object System.Drawing.Bitmap $newW, $newH
-    $bmp.SetResolution($img.HorizontalResolution, $img.VerticalResolution)
-    $graphics = [System.Drawing.Graphics]::FromImage($bmp)
+
+    # Windows/Chromium: pad every cursor to a 32×32 ARGB canvas (top-left).
+    # Non-square or narrow PNGs (e.g. 13×32 text I-beam) are rejected otherwise.
+    $canvas = New-Object System.Drawing.Bitmap $MaxPx, $MaxPx
+    $canvas.SetResolution(96, 96)
+    $graphics = [System.Drawing.Graphics]::FromImage($canvas)
     try {
       $graphics.Clear([System.Drawing.Color]::Transparent)
-      $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-      $graphics.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
+      $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::NearestNeighbor
+      $graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::Half
       $graphics.DrawImage($img, 0, 0, $newW, $newH)
     } finally {
       $graphics.Dispose()
@@ -47,8 +48,8 @@ function Resize-CursorPngInPlace {
 
     $img.Dispose()
     $img = $null
-    $bmp.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
-    $bmp.Dispose()
+    $canvas.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
+    $canvas.Dispose()
   } finally {
     if ($img) { $img.Dispose() }
   }

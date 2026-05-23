@@ -31,11 +31,16 @@ export class TerminalPromptDirective implements AfterViewInit, OnDestroy {
   private observer?: MutationObserver;
   private cursorWasHidden = true;
   private readonly onCursorBlink = (): void => {
-    if (this.jpCaretBlinkSound && this.cursor && !this.cursor.hidden) {
+    if (
+      this.jpCaretBlinkSound &&
+      this.cursor &&
+      this.cursor.classList.contains('jp-terminal-cursor--active')
+    ) {
       this.audio.playCaretBlink();
     }
   };
   private readonly onInput = (): void => this.sync();
+  private readonly onFocusChange = (): void => this.sync();
   private readonly onKeydown = (event: KeyboardEvent): void => {
     if (event.key === 'Enter') {
       this.scheduleInputRefocus();
@@ -57,7 +62,8 @@ export class TerminalPromptDirective implements AfterViewInit, OnDestroy {
     this.bindEntryFocus();
     this.sync();
     this.input.addEventListener('input', this.onInput);
-    this.input.addEventListener('focus', this.onInput);
+    this.input.addEventListener('focus', this.onFocusChange);
+    this.input.addEventListener('blur', this.onFocusChange);
     this.input.addEventListener('keydown', this.onKeydown);
 
     this.observer = new MutationObserver(() => this.sync());
@@ -70,7 +76,8 @@ export class TerminalPromptDirective implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.observer?.disconnect();
     this.input?.removeEventListener('input', this.onInput);
-    this.input?.removeEventListener('focus', this.onInput);
+    this.input?.removeEventListener('focus', this.onFocusChange);
+    this.input?.removeEventListener('blur', this.onFocusChange);
     this.input?.removeEventListener('keydown', this.onKeydown);
     this.cursor?.removeEventListener('animationiteration', this.onCursorBlink);
   }
@@ -125,9 +132,14 @@ export class TerminalPromptDirective implements AfterViewInit, OnDestroy {
       return;
     }
     const hide =
-      this.input.disabled || this.input.hasAttribute('data-hide-cursor');
-    if (!hide && this.cursorWasHidden) {
+      this.input.disabled ||
+      this.input.hasAttribute('data-hide-cursor') ||
+      document.activeElement !== this.input;
+    const active = !hide;
+    if (active && this.cursorWasHidden) {
       this.restartCursorBlink();
+    } else {
+      this.cursor.classList.toggle('jp-terminal-cursor--active', active);
     }
     this.cursorWasHidden = hide;
     this.cursor.hidden = hide;
@@ -162,8 +174,8 @@ export class TerminalPromptDirective implements AfterViewInit, OnDestroy {
 
   private restartCursorBlink(): void {
     const cursor = this.cursor!;
-    cursor.style.animation = 'none';
+    cursor.classList.remove('jp-terminal-cursor--active');
     void cursor.offsetHeight;
-    cursor.style.removeProperty('animation');
+    cursor.classList.add('jp-terminal-cursor--active');
   }
 }
