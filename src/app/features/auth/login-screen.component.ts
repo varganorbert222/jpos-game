@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
 } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
+import { ScoreboardService } from '../../core/services/scoreboard.service';
 import { SystemBootService } from '../../core/services/system-boot.service';
 
 import { TerminalPromptDirective } from '../../shared/terminal/terminal-prompt.directive';
@@ -20,12 +22,20 @@ import { TerminalPromptDirective } from '../../shared/terminal/terminal-prompt.d
 export class LoginScreenComponent {
   private readonly auth = inject(AuthService);
   private readonly boot = inject(SystemBootService);
+  private readonly scoreboard = inject(ScoreboardService);
 
   readonly username = signal('');
   readonly password = signal('');
   readonly submitting = signal(false);
 
   readonly error = this.auth.lastError;
+
+  readonly scoreboardPreview = computed(() => {
+    const user = this.username().trim().toLowerCase();
+    const top = this.scoreboard.globalTop().slice(0, 3);
+    const personal = user ? this.scoreboard.bestForOperator(user) : null;
+    return { top, personal, user };
+  });
 
   onUsernameInput(event: Event): void {
     this.auth.clearError();

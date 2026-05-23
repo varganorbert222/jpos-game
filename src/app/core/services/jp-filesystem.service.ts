@@ -24,6 +24,64 @@ AUTHORIZED PERSONNEL ONLY.`,
 3. Report intermittent states within 2 ticks.`,
   },
   {
+    path: '/PARK_OPS/MAIL_CONTACTS.TXT',
+    name: 'MAIL_CONTACTS.TXT',
+    kind: 'text',
+    content: `JP-OS MAIL — AUTHORIZED CONTACT REGISTRY
+Revision: 4.0.5-alpha  |  Maintained by: R.ARNOLD / Security
+
+Use this list before opening INGEN MAIL. If the sender address is not
+listed below (exact match), treat the message as UNTRUSTED.
+
+────────────────────────────────────────────────────────────────
+ TIER A — PARK COMMAND (always safe to open)
+────────────────────────────────────────────────────────────────
+  J.HAMMOND          Executive oversight, policy
+  R.ARNOLD           Chief engineer, perimeter / grid directives
+  I.MALCOLM          Risk & containment advisory (secondary)
+
+────────────────────────────────────────────────────────────────
+ TIER B — JP-OS INTERNAL (automated, safe)
+────────────────────────────────────────────────────────────────
+  JP-OS.REPORTER     Scheduled status digests (tick reports)
+  JP-OS.ALERT        Rare automated escalation (verify on grid)
+
+────────────────────────────────────────────────────────────────
+ TIER C — OPERATIONS STAFF (safe if exact spelling)
+────────────────────────────────────────────────────────────────
+  D.NAISH            Veterinary / specimen welfare
+  R.TEMBO            Maintenance scheduling
+  L.GRANT            Visitor services liaison
+  E.SATTALER         Field genetics log (BIO cross-post)
+  H.WU               Systems analyst (JP-OS patches)
+  M.CRON             Night shift supervisor
+  B.GENNARO          Legal / liability notices (secondary)
+
+────────────────────────────────────────────────────────────────
+ UNTRUSTED / UNKNOWN SENDERS
+────────────────────────────────────────────────────────────────
+  UNKNOWN, ???, blank From, or any address NOT in Tier A–C:
+    • Do NOT open attachments.
+    • You may DELETE unread to quarantine.
+    • A small fraction of untrusted mail carries MAIL-BUS payloads
+      (system anomalies). When in doubt: delete, or HARD REBOOT after
+      accidental open — reboot clears software infection only.
+
+  SPOOF WARNING — these are NOT authorized (common forgeries):
+    J.HAMM0ND, J-HAMMOND, INGEN-SYS, JP-0S, SECURITY-UPDATE
+
+────────────────────────────────────────────────────────────────
+ OPERATOR CHECKLIST
+────────────────────────────────────────────────────────────────
+  1. Match From field to this document (character-for-character).
+  2. If unsure — compare subject with grid / SECURITY before acting.
+  3. Trusted mail never requires executable attachments.
+  4. See FENCE_PROTOCOL.TXT for post-reboot perimeter checks.
+
+— END REGISTRY —`,
+    readonly: true,
+  },
+  {
     path: '/INGEN/MISSION_BRIEF.TXT',
     name: 'MISSION_BRIEF.TXT',
     kind: 'text',
@@ -72,7 +130,8 @@ Recommend double fence segment and patrol overlap.`,
     kind: 'text',
     content: `Shift notes:
 - Check mail for Hammond directives.
-- Tour runs only when perimeter nominal.`,
+- Tour runs only when perimeter nominal.
+- Before opening mail: read PARK_OPS/MAIL_CONTACTS.TXT`,
   },
 ];
 
@@ -81,7 +140,11 @@ const FOLDERS: JpFolderEntry[] = [
   {
     path: '/PARK_OPS',
     name: 'PARK_OPS',
-    children: ['/PARK_OPS/README.TXT', '/PARK_OPS/FENCE_PROTOCOL.TXT'],
+    children: [
+      '/PARK_OPS/README.TXT',
+      '/PARK_OPS/FENCE_PROTOCOL.TXT',
+      '/PARK_OPS/MAIL_CONTACTS.TXT',
+    ],
   },
   {
     path: '/INGEN',

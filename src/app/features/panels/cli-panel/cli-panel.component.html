@@ -51,6 +51,14 @@
       VOLT+ FENCE
     </button>
 
+    <button
+      type="button"
+      class="jp-btn"
+      (click)="onQuickAction('decrease_voltage', cmdInput)"
+    >
+      VOLT- FENCE
+    </button>
+
     <!-- SECURITY TEAMS -->
     <button type="button" class="jp-btn" (click)="onQuickAction('dispatch_patrol', cmdInput)">
       PATROL

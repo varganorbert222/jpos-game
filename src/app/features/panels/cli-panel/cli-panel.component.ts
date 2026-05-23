@@ -3,7 +3,8 @@ import { CLI_HELP_LINES } from '../../../core/constants/cli-commands';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
 import { terminalActionNeedsParam } from '../../../../simulation/actions';
 import { getNextCommandSuggestions } from '../../../../simulation/terminal-suggestions';
-import { SystemBootService } from '../../../core/services/system-boot.service';
+import { HardRebootConfirmService } from '../../../core/services/hard-reboot-confirm.service';
+import { buildHardRebootPrompt } from '../../../core/utils/hard-reboot-prompt';
 import { SectionLoaderComponent } from '../../../shared/boot/section-loader.component';
 import { TerminalCommandHistory } from '../../../shared/terminal/terminal-command-history';
 import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
@@ -28,7 +29,7 @@ const MAX_TERMINAL_LINES = 40;
 })
 export class CliPanelComponent {
   private readonly sim = inject(SimulationBridgeService);
-  private readonly boot = inject(SystemBootService);
+  private readonly hardReboot = inject(HardRebootConfirmService);
   private readonly history = new TerminalCommandHistory();
   readonly outputLines = signal<string[]>([
     'JP-OS COMMAND INTERFACE',
@@ -45,7 +46,10 @@ export class CliPanelComponent {
   onQuickAction(type: string, input: HTMLInputElement): void {
     if (type === 'system_hard_reboot') {
       input.value = '';
-      this.boot.promptHardReboot();
+      const snap = this.sim.snapshot();
+      if (snap) {
+        this.hardReboot.request(buildHardRebootPrompt(snap));
+      }
       return;
     }
     const needsParam = terminalActionNeedsParam(type);
@@ -77,7 +81,10 @@ export class CliPanelComponent {
       return;
     }
     if (line.toLowerCase() === 'system_hard_reboot') {
-      this.boot.promptHardReboot();
+      const snap = this.sim.snapshot();
+      if (snap) {
+        this.hardReboot.request(buildHardRebootPrompt(snap));
+      }
       return;
     }
     this.append(`> ${line}`);

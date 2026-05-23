@@ -21,6 +21,24 @@
             (cancelled)="boot.cancelHardReboot()"
           />
         }
+        @if (hardReboot.pending()) {
+          <app-jp-confirm-modal
+            title="HARD REBOOT"
+            confirmLabel="REBOOT"
+            cancelLabel="CANCEL"
+            [message]="hardRebootMessage()"
+            (confirmed)="onConfirmInGameHardReboot()"
+            (cancelled)="onCancelInGameHardReboot()"
+          />
+        }
+        @if (shiftCompleteSnapshot(); as won) {
+          <app-shift-complete-modal
+            [snapshot]="won"
+            [rankHint]="shiftRankHint()"
+            (dismiss)="onDismissShiftModal()"
+            (handoffDone)="onHandoffOperator()"
+          />
+        }
         @if (collapseSnapshot(); as ended) {
           <app-game-over-modal
             [snapshot]="ended"

@@ -84,5 +84,29 @@
       Admin: <kbd>admin</kbd> / <kbd>admin</kbd> — operators: matching
       username/password (e.g. <kbd>ops1</kbd> / <kbd>ops1</kbd>).
     </p>
+
+    <aside class="jp-login-screen__scores jp-info" aria-label="Scoreboard">
+      <p class="jp-login-screen__scores-title">SHIFT SCOREBOARD</p>
+      @if (scoreboardPreview().top.length === 0) {
+        <p class="jp-login-screen__scores-empty">No runs recorded yet.</p>
+      } @else {
+        <ul class="jp-login-screen__scores-list">
+          @for (row of scoreboardPreview().top; track row.recordedAt) {
+            <li>
+              {{ row.operatorLabel }} — {{ row.score }}
+              <span class="jp-login-screen__scores-meta"
+                >({{ row.outcome === 'shift' ? 'SHIFT' : 'COLLAPSE' }})</span
+              >
+            </li>
+          }
+        </ul>
+      }
+      @if (scoreboardPreview().personal; as best) {
+        <p class="jp-login-screen__scores-personal">
+          Your best ({{ scoreboardPreview().user }}): {{ best.score }} —
+          {{ best.operatorLabel }}
+        </p>
+      }
+    </aside>
   </form>
 </div>

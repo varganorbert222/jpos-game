@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 export type OsIconName =
   | 'security'
   | 'power'
+  | 'fence'
   | 'dino'
   | 'terminal'
   | 'weather'
@@ -40,6 +41,13 @@ export type OsIconName =
             stroke-width="2"
           />
           <rect x="6" y="6" width="4" height="4" fill="#5fde5f" />
+        }
+        @case ('fence') {
+          <rect x="0" y="0" width="16" height="16" fill="#102030" />
+          <rect x="2" y="3" width="2" height="11" fill="#e8f0f8" />
+          <rect x="7" y="2" width="2" height="12" fill="#5fde5f" />
+          <rect x="12" y="4" width="2" height="10" fill="#e8f0f8" />
+          <rect x="3" y="7" width="10" height="2" fill="#ffcc33" />
         }
         @case ('power') {
           <rect x="0" y="0" width="16" height="16" fill="#102030" />

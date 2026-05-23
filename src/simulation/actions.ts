@@ -1,3 +1,11 @@
+import { getActionNumber, getParamNumber } from './gameplay-config';
+import { resolveIncidentCategory } from './systems/events';
+import { notifyTutorialProgress, resumeTutorialTicks } from './systems/tutorial-script';
+import {
+  dispatchPatrol,
+  dispatchSealBreach,
+  dispatchSedate,
+} from './systems/field-ops';
 import type { QueuedPlayerAction, SimulationState } from './types';
 import { TERMINAL_HELP_LINES, TERMINAL_QUEUE_ACTIONS } from './terminal-manifest';
 import {
@@ -15,7 +23,10 @@ export { terminalActionNeedsParam } from './terminal-manifest';
 const COOLDOWNS: Record<string, number> = {
   reset_fence: 3,
   increase_voltage: 2,
+  decrease_voltage: 2,
   dispatch_patrol: 4,
+  seal_breach: 5,
+  dino_sedate: 6,
   generator_restart: 5,
   cam_reboot: 2,
   power_reroute: 3,
@@ -85,21 +96,36 @@ function queueWithZone(state: SimulationState, type: string, raw: string | undef
   return queueValidatedAction(state, type, { zone: parsed });
 }
 
+const IMMEDIATE_ACTIONS = new Set([
+  'increase_voltage',
+  'decrease_voltage',
+  'power_reroute',
+  'cam_reboot',
+  'emergency_venting',
+  'system_hard_reboot',
+]);
+
 export function queueAction(
   state: SimulationState,
   type: string,
   params: Record<string, string | number> = {},
 ): boolean {
   const cooldown = COOLDOWNS[type] ?? 3;
+  const delay = IMMEDIATE_ACTIONS.has(type)
+    ? getActionNumber('defaultQueueDelayTicks')
+    : 2;
   const action: QueuedPlayerAction = {
     id: state.nextActionId++,
     type,
     params,
-    executeTick: state.tick + 2,
+    executeTick: state.tick + Math.max(1, delay),
     cooldownTicks: cooldown,
   };
   state.actionQueue.push(action);
   state.logEntries.push(`[CMD] Queued: ${type}`);
+  if (state.difficultyMode === 'tutorial' && state.tutorialAwaitingAction) {
+    resumeTutorialTicks(state);
+  }
   return true;
 }
 
@@ -113,6 +139,7 @@ export function processActionQueue(state: SimulationState): void {
 }
 
 function executeAction(state: SimulationState, action: QueuedPlayerAction): void {
+  let skipTutorialReport = false;
   switch (action.type) {
     case 'reset_fence': {
       const id = Number(action.params['id'] ?? 0);
@@ -123,6 +150,8 @@ function executeAction(state: SimulationState, action: QueuedPlayerAction): void
         if (fence.state !== 'Breached') {
           fence.state = 'Stable';
         }
+        resolveIncidentCategory(state, 'high fence stress', id);
+        resolveIncidentCategory(state, 'fence voltage drop', id);
       }
       break;
     }
@@ -130,17 +159,43 @@ function executeAction(state: SimulationState, action: QueuedPlayerAction): void
       const id = Number(action.params['id'] ?? 0);
       const fence = state.fences[id];
       if (fence) {
-        fence.voltage = Math.min(100, fence.voltage + 20);
+        const delta = getParamNumber('fenceBoostImmediateDelta');
+        fence.voltage = Math.min(100, fence.voltage + delta);
         const gen = state.generators[0];
         gen.load = Math.min(100, gen.load + 8);
         gen.temperature = Math.min(100, gen.temperature + 3);
+        resolveIncidentCategory(state, 'fence voltage drop', id);
+      }
+      break;
+    }
+    case 'decrease_voltage': {
+      const id = Number(action.params['id'] ?? 0);
+      const fence = state.fences[id];
+      if (fence) {
+        const delta = getParamNumber('fenceShedImmediateDelta');
+        fence.voltage = Math.max(0, fence.voltage - delta);
+        const gen = state.generators[0];
+        gen.load = Math.max(0, gen.load - 6);
+        gen.temperature = Math.max(0, gen.temperature - 2);
+        state.logEntries.push(
+          `[FNC] Fence ${id} voltage shed — segment draw reduced, grid headroom recovered.`,
+        );
       }
       break;
     }
     case 'dispatch_patrol': {
-      const team = state.teams[0];
-      team.busyTicks = 6;
-      team.fatigue = Math.min(100, team.fatigue + 5);
+      const zone = Number(action.params['zone'] ?? 0) as SimulationState['zones'][0]['id'];
+      dispatchPatrol(state, zone);
+      break;
+    }
+    case 'seal_breach': {
+      const id = Number(action.params['id'] ?? 0);
+      dispatchSealBreach(state, id);
+      break;
+    }
+    case 'dino_sedate': {
+      const id = Number(action.params['id'] ?? 0);
+      skipTutorialReport = !!dispatchSedate(state, id);
       break;
     }
     case 'generator_restart': {
@@ -158,6 +213,7 @@ function executeAction(state: SimulationState, action: QueuedPlayerAction): void
       const cam = state.cameras[id];
       if (cam) {
         cam.state = 'Online';
+        resolveIncidentCategory(state, 'camera offline');
       }
       break;
     }
@@ -172,23 +228,61 @@ function executeAction(state: SimulationState, action: QueuedPlayerAction): void
       state.globalBlackout = true;
       state.blackoutTicks += 5;
       break;
-    case 'lethal_authorization':
-      if (state.resources.tranquilizerAmmo > 0) {
-        state.resources.tranquilizerAmmo--;
-        const d = state.dinosaurs[0];
-        d.aggression = Math.max(0, d.aggression - 30);
-        d.stress = Math.max(0, d.stress - 20);
-        state.stability = Math.max(0, state.stability - 20);
+    case 'lethal_authorization': {
+      const id = Number(action.params['id'] ?? 0);
+      const d = state.dinosaurs[id] ?? state.dinosaurs[0];
+      if (d) {
+        d.aggression = 0;
+        d.stress = Math.max(0, d.stress - 40);
+        d.aiState = 'Idle';
+        state.stability = Math.max(
+          0,
+          state.stability - getParamNumber('lethalStabilityPenalty'),
+        );
+        resolveIncidentCategory(state, 'dinosaur escape', undefined, d.id);
       }
       break;
+    }
     case 'system_hard_reboot':
-      state.activeEvents = [];
-      state.globalBlackout = true;
-      state.blackoutTicks = 10;
-      state.logEntries.push('[SYS] Hard reboot — all sectors offline 10 ticks.');
+      if (state.hardRebootCooldownTicks > 0) {
+        state.logEntries.push('[SYS] Hard reboot cooling down.');
+        break;
+      }
+      const physicalCategories = new Set([
+        'fence breach',
+        'dinosaur escape',
+        'total blackout',
+        'high fence stress',
+        'approaching storm',
+        'generator overheating',
+        'fence voltage drop',
+        'dinosaur stress increase',
+      ]);
+      state.activeEvents = state.activeEvents.filter((e) =>
+        physicalCategories.has(e.category),
+      );
+      state.alertEntries = state.alertEntries.filter(
+        (a) =>
+          !/ghost|false|unverified|payload|corrupt|stuck sensor/i.test(a),
+      );
+      state.infectionLevel = 0;
+      state.telemetryCorruption = 0;
+      state.rebootPowerOutageTicks = getParamNumber('hardRebootPowerOutageTicks');
+      state.hardRebootCooldownTicks = getParamNumber('hardRebootCooldownTicks');
+      state.logEntries.push(
+        '[SYS] Hard reboot — software anomalies cleared; perimeter power cycling.',
+      );
       break;
     default:
       state.logEntries.push(`[CMD] Unknown action: ${action.type}`);
+  }
+
+  if (!skipTutorialReport) {
+    notifyTutorialProgress(state, {
+      type: 'action',
+      actionType: action.type,
+      params: action.params,
+    });
   }
 }
 
@@ -201,18 +295,30 @@ export function parseTerminalCommand(
     return 'ERR: empty command';
   }
 
+  if (state.difficultyMode === 'tutorial' && state.tutorialAwaitingAction) {
+    resumeTutorialTicks(state);
+  }
+
   switch (parts[0]) {
     case 'help':
       return TERMINAL_HELP_LINES.join('\n');
     case 'cls':
       return 'OK: display cleared';
-    case 'status':
+    case 'status': {
+      notifyTutorialProgress(state, { type: 'terminal', command: 'status' });
       return `STABILITY ${Math.round(state.stability)} | TICK ${state.tick} | PHASE ${state.escalationPhase} | WX ${state.weather}`;
+    }
     case 'fence':
       if (parts[1] === 'reset') {
         return queueWithFenceId(state, 'reset_fence', parts[2]);
       }
-      return 'ERR: usage fence reset [ID]';
+      if (parts[1] === 'boost') {
+        return queueWithFenceId(state, 'increase_voltage', parts[2]);
+      }
+      if (parts[1] === 'shed') {
+        return queueWithFenceId(state, 'decrease_voltage', parts[2]);
+      }
+      return 'ERR: usage fence reset|boost|shed [ID]';
     case 'cam':
       if (parts[1] === 'reboot') {
         return queueWithCameraId(state, 'cam_reboot', parts[2]);
@@ -239,7 +345,26 @@ export function parseTerminalCommand(
               : 'LOW';
         return `DINO ${d.id}: ${d.species} Z${d.zoneId} THREAT=${threat} ACT=${act}`;
       }
-      return 'ERR: usage dino track [ID]';
+      if (parts[1] === 'sedate') {
+        const parsed = parseIntegerParam(parts[2]);
+        if (parsed === 'missing' || parsed === 'invalid') {
+          return paramParseError('dino ID', parsed);
+        }
+        const err = validateDinoId(state, parsed);
+        if (err) {
+          return err;
+        }
+        const fail = dispatchSedate(state, parsed);
+        if (!fail) {
+          notifyTutorialProgress(state, {
+            type: 'action',
+            actionType: 'dino_sedate',
+            params: { id: parsed },
+          });
+        }
+        return fail ?? `OK: dino sedate ${parsed} dispatched`;
+      }
+      return 'ERR: usage dino track|sedate [ID]';
     case 'power':
       if (parts[1] === 'reroute') {
         return queueWithZone(state, 'power_reroute', parts[2]);
@@ -263,6 +388,20 @@ export function parseTerminalCommand(
           }
           if (parts[0] === 'cam_reboot') {
             return queueWithCameraId(state, parts[0], parts[1]);
+          }
+          if (parts[0] === 'seal_breach') {
+            return queueWithFenceId(state, parts[0], parts[1]);
+          }
+          if (parts[0] === 'dino_sedate') {
+            const parsed = parseIntegerParam(parts[1]);
+            if (parsed === 'missing' || parsed === 'invalid') {
+              return paramParseError('dino ID', parsed);
+            }
+            const err = validateDinoId(state, parsed);
+            if (err) {
+              return err;
+            }
+            return queueValidatedAction(state, parts[0], { id: parsed });
           }
           return queueWithFenceId(state, parts[0], parts[1]);
         case 'zone':

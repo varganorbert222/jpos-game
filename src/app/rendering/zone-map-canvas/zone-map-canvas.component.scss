@@ -25,12 +25,16 @@ canvas {
   margin: 0;
   padding: 6px 10px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px 12px;
+  grid-template-columns: 1fr;
+  gap: 4px 8px;
   font-size: var(--jp-font-sm);
   color: var(--jp-irix-text);
   background: var(--jp-irix-title);
   border-top: 2px solid var(--jp-irix-bevel-dark);
+}
+
+.map-legend__zone-line {
+  line-height: 1.25;
 }
 
 .map-legend li {

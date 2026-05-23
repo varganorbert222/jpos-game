@@ -8,9 +8,16 @@ export type DinoAiState = 'Idle' | 'Roaming' | 'Agitated' | 'Hunting' | 'FenceTe
 
 export type EventSeverity = 'minor' | 'major' | 'critical';
 
+export type IncidentPhase = 'warn' | 'escalating' | 'critical';
+
+export type FieldOpKind = 'patrol' | 'seal_breach' | 'sedate' | 'generator_restart';
+
 export type WeatherState = 'Clear' | 'Storm';
 
 export type EscalationPhaseId = 1 | 2 | 3 | 4;
+
+/** Live shift difficulty — set at system start from halted screen. */
+export type DifficultyMode = 'tutorial' | 'easy' | 'normal' | 'veteran';
 
 export interface Fence {
   id: number;
@@ -56,8 +63,19 @@ export interface Dinosaur {
 export interface MaintenanceTeam {
   id: number;
   zoneId: ZoneId;
+  targetZoneId: ZoneId | null;
   fatigue: number;
   busyTicks: number;
+  travelTicksRemaining: number;
+}
+
+export interface FieldOperation {
+  id: number;
+  kind: FieldOpKind;
+  targetZoneId: ZoneId;
+  targetEntityId: number;
+  ticksRemaining: number;
+  phase: 'travel' | 'working' | 'returning';
 }
 
 export interface Helicopter {
@@ -80,8 +98,13 @@ export interface GameEvent {
   createdTick: number;
   expiresTick: number;
   resolved: boolean;
+  phase: IncidentPhase;
+  phaseStartedTick: number;
+  criticalApplied: boolean;
+  isSoftware: boolean;
   targetZoneId?: ZoneId;
   targetFenceId?: number;
+  targetDinoId?: number;
 }
 
 export interface QueuedPlayerAction {
@@ -110,6 +133,21 @@ export interface SimulationState {
   tick: number;
   elapsedRealtimeMs: number;
   rngSeed: number;
+  runSeed: number;
+  difficultyMode: DifficultyMode;
+  infectionLevel: number;
+  shiftObjectiveWon: boolean;
+  operatorSlot: number;
+  hardRebootCooldownTicks: number;
+  rebootPowerOutageTicks: number;
+  tourBonusTicksRemaining: number;
+  ticksSinceLastIncidentStart: number;
+  recoveryQuietTicksLeft: number;
+  fieldOps: FieldOperation[];
+  nextFieldOpId: number;
+  heliTicksRemaining: number;
+  heliTargetDinoId: number | null;
+  heliPhase: 'idle' | 'travel' | 'dart' | 'sedating' | 'returning';
   stability: number;
   breachCount: number;
   blackoutTicks: number;
@@ -142,6 +180,26 @@ export interface SimulationState {
   telemetryCorruption: number;
   nextEventId: number;
   nextActionId: number;
+  /** Logged-in operator (set at run start from JP-OS login). */
+  operatorUsername: string;
+  operatorDisplayLabel: string;
+  /** Tutorial script cursor (`system start tutorial`). */
+  tutorialStep: number;
+  tutorialBegun: boolean;
+  tutorialAwaitingAction: boolean;
+  /** Queued/terminal command issued; waiting for tick to execute and verify. */
+  tutorialAwaitingStepCompletion: boolean;
+  /** Ticks run freely between training steps (after an action completes). */
+  tutorialInterlude: boolean;
+  tutorialInterludeUntilTick: number;
+  tutorialPendingStepIndex: number;
+  /** Shown in UI while training waits for the operator. */
+  tutorialObjective: string;
+  tutorialScriptComplete: boolean;
+  /** One-shot mail infection demo queued by tutorial script. */
+  tutorialMailDemoPending: boolean;
+  /** Stacked black swan incidents fired this run. */
+  blackSwansThisRun: number;
 }
 
 export type SimulationSnapshot = Readonly<SimulationState>;

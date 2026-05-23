@@ -10,6 +10,7 @@ import type { DockApp } from '../panels/dock/dock.component';
 import { WindowManagerService } from './window-manager.service';
 import { SecurityWindowComponent } from './windows/security-window.component';
 import { PowerWindowComponent } from './windows/power-window.component';
+import { FenceWindowComponent } from './windows/fence-window.component';
 import { DinoWindowComponent } from './windows/dino-window.component';
 import { TerminalWindowComponent } from './windows/terminal-window.component';
 import { WeatherWindowComponent } from './windows/weather-window.component';
@@ -27,6 +28,7 @@ import { SectionLoaderComponent } from '../../shared/boot/section-loader.compone
     SectionLoaderComponent,
     SecurityWindowComponent,
     PowerWindowComponent,
+    FenceWindowComponent,
     DinoWindowComponent,
     TerminalWindowComponent,
     WeatherWindowComponent,

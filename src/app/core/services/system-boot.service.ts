@@ -6,6 +6,7 @@ import {
 } from '../types/sys-banner';
 import { AuthService } from './auth.service';
 import { FenceStatusService } from './fence-status.service';
+import type { DifficultyId } from '../../../simulation';
 import { SimulationBridgeService } from './simulation-bridge.service';
 import {
   ALL_BOOT_SECTIONS,
@@ -157,6 +158,9 @@ export class SystemBootService {
 
   readonly systemReadyBusy = signal(false);
 
+  /** Set by `system start*` on halted screen; applied on next cold boot. */
+  private pendingDifficulty: DifficultyId = 'normal';
+
   readonly awaitingLogin = computed(() => this.phase() === 'awaiting-login');
 
   /** Login gate: any unauthenticated state except boot/shutdown/halt screens. */
@@ -227,6 +231,7 @@ export class SystemBootService {
 
   /** Load panel modules after first login; skip if still online after logout. */
   async finishLogin(): Promise<void> {
+    this.applyOperatorToSimulation();
     if (this.modulesOnline()) {
       this.phase.set('complete');
       this.applyDesktopBanner();
@@ -314,13 +319,35 @@ export class SystemBootService {
   async runSystemReadyCommand(line: string): Promise<string> {
     const cmd = line.trim().toLowerCase().replace(/_/g, ' ');
     if (cmd === 'system start') {
+      this.pendingDifficulty = 'normal';
       void this.scheduleSystemStart();
       return 'BOOT SEQUENCE INITIATED.';
     }
-    if (cmd === 'help') {
-      return 'HALTED SYSTEM COMMANDS:\n  system start — cold boot JP-OS kernel';
+    if (cmd === 'system start easy') {
+      this.pendingDifficulty = 'easy';
+      void this.scheduleSystemStart();
+      return 'BOOT SEQUENCE INITIATED — TRAINEE MODE.';
     }
-    return 'UNKNOWN COMMAND — SYSTEM HALTED. TYPE: system start';
+    if (cmd === 'system start veteran') {
+      this.pendingDifficulty = 'veteran';
+      void this.scheduleSystemStart();
+      return 'BOOT SEQUENCE INITIATED — VETERAN MODE.';
+    }
+    if (cmd === 'system start tutorial') {
+      this.pendingDifficulty = 'tutorial';
+      void this.scheduleSystemStart();
+      return 'TRAINING MODULE LOADED — DETERMINISTIC SHIFT.';
+    }
+    if (cmd === 'help') {
+      return [
+        'HALTED SYSTEM COMMANDS:',
+        '  system start           — standard shift',
+        '  system start easy      — chill practice shift',
+        '  system start veteran   — veteran shift',
+        '  system start tutorial  — guided training (deterministic)',
+      ].join('\n');
+    }
+    return 'UNKNOWN COMMAND — TYPE: help';
   }
 
   isSectionReady(id: BootSectionId): boolean {
@@ -426,9 +453,38 @@ export class SystemBootService {
     this.windowStates.update((prev) => ({ ...prev, [windowId]: 'ready' }));
   }
 
+  private applyOperatorToSimulation(): void {
+    const session = this.auth.session();
+    if (!session) {
+      return;
+    }
+    this.sim.setOperatorIdentity({
+      username: session.username,
+      displayLabel: session.displayLabel,
+    });
+  }
+
+  private operatorForColdBoot():
+    | { username: string; displayLabel: string }
+    | undefined {
+    const session = this.auth.session();
+    if (!session) {
+      return undefined;
+    }
+    return {
+      username: session.username,
+      displayLabel: session.displayLabel,
+    };
+  }
+
   private async startColdBoot(): Promise<void> {
     const run = ++this.bootRun;
     this.clearTimers();
+    this.sim.resetToInitial(
+      undefined,
+      this.pendingDifficulty,
+      this.operatorForColdBoot(),
+    );
     this.hardRebootActive.set(false);
     this.bootScreenTitle.set('JP-OS SYSTEM BOOT');
     this.phase.set('boot-screen');

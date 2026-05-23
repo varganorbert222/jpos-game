@@ -1,0 +1,286 @@
+{
+  "version": 1,
+  "params": {
+    "tickRealtimeMs": {
+      "v": 2000,
+      "hu": "Egy szimulációs tick valós ideje milliszekundumban.",
+      "min": 500,
+      "max": 5000
+    },
+    "shiftWinElapsedMs": {
+      "v": 900000,
+      "hu": "Ennyi valós idő (ms) után „nyert” a shift: scoreboard, opcionális operátor-csere folytatáshoz. 900000 = 15 perc.",
+      "min": 300000,
+      "max": 3600000
+    },
+    "autosaveIntervalTicks": {
+      "v": 60,
+      "hu": "Hány tickenként autosave (csak ha a save rendszer aktív).",
+      "min": 10,
+      "max": 200
+    },
+    "maxSimultaneousIncidents": {
+      "v": 8,
+      "hu": "Globális plafon az incidens queue méretére (ritka csúcs).",
+      "min": 2,
+      "max": 16
+    },
+    "incidentExpireTicks": {
+      "v": 60,
+      "hu": "Meddig maradhat feloldatlan egy incidens, mielőtt automatikusan eszkalál vagy lezár (tervezett).",
+      "min": 20,
+      "max": 120
+    },
+    "recoveryQuietTicks": {
+      "v": 2,
+      "hu": "Recovery ablak hossza: ennyi tick „csend” incidens-indítás nélkül (normal alap).",
+      "min": 0,
+      "max": 8
+    },
+    "recoveryWindowTicks": {
+      "v": 10,
+      "hu": "Recovery számláló: ennyi tick alatt legfeljebb egy recovery quiet blokk (normal alap).",
+      "min": 4,
+      "max": 30
+    },
+    "hardRebootPowerOutageTicks": {
+      "v": 8,
+      "hu": "Hard reboot alatt a kerítések áram nélkül (globális fence power rail OFF). Nincs extra stability büntetés.",
+      "min": 3,
+      "max": 20
+    },
+    "hardRebootCooldownTicks": {
+      "v": 15,
+      "hu": "Új hard reboot parancs között minimum ennyi tick (spam ellen).",
+      "min": 0,
+      "max": 60
+    },
+    "fenceBoostImmediateDelta": {
+      "v": 20,
+      "hu": "Fence boost azonnali feszültség-növekedés (ugyanabban a tickben, nem késleltetett).",
+      "min": 5,
+      "max": 40
+    },
+    "fenceShedImmediateDelta": {
+      "v": 15,
+      "hu": "Fence shed: egy szegmens feszültségének azonnali csökkentése (generátor tehermentesítés).",
+      "min": 5,
+      "max": 40
+    },
+    "lethalStabilityPenalty": {
+      "v": 20,
+      "hu": "Lethal protokoll után egyszeri stability csökkenés.",
+      "min": 5,
+      "max": 50
+    },
+    "tourBonusQuietTicks": {
+      "v": 30,
+      "hu": "Aktív túra bónusz: ennyi tickig csökkentett új incidens esély (opcionális túra).",
+      "min": 0,
+      "max": 120
+    },
+    "tourBonusIncidentMultiplier": {
+      "v": 0.65,
+      "hu": "Túra bónusz alatt új incidens valószínűség szorzó (1.0 = nincs bónusz).",
+      "min": 0.2,
+      "max": 1.0
+    },
+    "logRunSeedToConsole": {
+      "v": true,
+      "hu": "Új run indításakor seed kiírása konzolra (bot / finomhangolás / újrajátszás).",
+      "min": 0,
+      "max": 1
+    },
+    "tutorialInterludeTicks": {
+      "v": 4,
+      "hu": "Training: két lépés között ennyi tickig fut a szim (queued parancs lefutása után), mielőtt a következő lépés befagyaszt.",
+      "min": 1,
+      "max": 30
+    }
+  },
+  "difficulties": {
+    "tutorial": {
+      "label": {
+        "v": "TRAINING",
+        "hu": "Csak system start tutorial — determinisztikus script.",
+        "min": 0,
+        "max": 0
+      },
+      "deterministic": { "v": true, "hu": "Fix seed és fix eseménysor.", "min": 0, "max": 1 },
+      "maxActiveIncidents": { "v": 1, "hu": "Párhuzamos döntési incidens max.", "min": 1, "max": 3 },
+      "warnPhaseTicks": { "v": 6, "hu": "WARN fázis hossza tickben (tutorial script felülírhatja).", "min": 2, "max": 20 },
+      "escalatingPhaseTicks": { "v": 4, "hu": "ESCALATING fázis hossza.", "min": 1, "max": 15 },
+      "ghostAlertsEnabled": { "v": false, "hu": "Hamis riasztások.", "min": 0, "max": 1 },
+      "mailVirusChanceUnknown": { "v": 1.0, "hu": "Tutorial unknown levél: scriptelt fertőzés demo.", "min": 0, "max": 1 },
+      "mailVirusChanceSpoof": { "v": 0, "hu": "Spoof vírus esély megnyitáskor.", "min": 0, "max": 1 },
+      "avgNewIncidentIntervalTicks": { "v": 9999, "hu": "Script vezérel — magas = szinte nem random.", "min": 50, "max": 99999 },
+      "phase4ProbabilityCap": { "v": 0, "hu": "Fázis 4 esemény plafon (tutorial: 0).", "min": 0, "max": 1 }
+    },
+    "easy": {
+      "label": { "v": "TRAINEE", "hu": "Chill gyakorló üzem — system start easy.", "min": 0, "max": 0 },
+      "deterministic": { "v": false, "hu": "Random run.", "min": 0, "max": 1 },
+      "maxActiveIncidents": { "v": 1, "hu": "Max 1 aktív döntési incidens.", "min": 1, "max": 2 },
+      "warnPhaseTicks": { "v": 8, "hu": "WARN hossz (16 mp @ 2s tick).", "min": 3, "max": 20 },
+      "escalatingPhaseTicks": { "v": 4, "hu": "ESCALATING hossz.", "min": 2, "max": 12 },
+      "ghostAlertsEnabled": { "v": false, "hu": "Easy: csak valós alert.", "min": 0, "max": 1 },
+      "mailVirusChanceUnknown": { "v": 0.05, "hu": "Ismeretlen feladó megnyitásakor vírus esély.", "min": 0, "max": 1 },
+      "mailVirusChanceSpoof": { "v": 0.1, "hu": "Spoof feladó megnyitásakor vírus esély.", "min": 0, "max": 1 },
+      "avgNewIncidentIntervalTicks": { "v": 90, "hu": "Átlagos tick két új incidens között (~3 perc).", "min": 30, "max": 300 },
+      "phase4ProbabilityCap": { "v": 0.12, "hu": "15 perc után / fázis 4 esemény plafon szorzó.", "min": 0.05, "max": 0.5 },
+      "recoveryQuietTicks": { "v": 3, "hu": "Easy recovery csend.", "min": 1, "max": 8 },
+      "recoveryWindowTicks": { "v": 12, "hu": "Easy recovery ablak.", "min": 6, "max": 30 }
+    },
+    "normal": {
+      "label": { "v": "STANDARD", "hu": "Alapértelmezett — system start (nincs külön felirat).", "min": 0, "max": 0 },
+      "deterministic": { "v": false, "hu": "Random run.", "min": 0, "max": 1 },
+      "maxActiveIncidents": { "v": 2, "hu": "Max 2 párhuzamos incidens (gyakran 1).", "min": 1, "max": 3 },
+      "warnPhaseTicks": { "v": 5, "hu": "WARN hossz (~10 mp).", "min": 3, "max": 15 },
+      "escalatingPhaseTicks": { "v": 3, "hu": "ESCALATING hossz.", "min": 2, "max": 10 },
+      "ghostAlertsEnabled": { "v": true, "hu": "Normal+: ghost alert engedélyezve.", "min": 0, "max": 1 },
+      "mailVirusChanceUnknown": { "v": 0.12, "hu": "Unknown megnyitás vírus %.", "min": 0, "max": 0.5 },
+      "mailVirusChanceSpoof": { "v": 0.25, "hu": "Spoof megnyitás vírus % — próba érték.", "min": 0, "max": 0.6 },
+      "avgNewIncidentIntervalTicks": { "v": 40, "hu": "~60–90 mp átlag incidens között (40 tick=80s + recovery).", "min": 20, "max": 120 },
+      "phase4ProbabilityCap": { "v": 0.2, "hu": "Fázis 4 plafon.", "min": 0.08, "max": 0.4 },
+      "blackSwanMaxPerRun": { "v": 1, "hu": "Black swan esemény max runenként.", "min": 0, "max": 3 }
+    },
+    "veteran": {
+      "label": { "v": "VETERAN", "hu": "system start veteran — explicit nehéz üzem.", "min": 0, "max": 0 },
+      "deterministic": { "v": false, "hu": "Random run.", "min": 0, "max": 1 },
+      "maxActiveIncidents": { "v": 2, "hu": "Max 2, spike-ben 3.", "min": 2, "max": 4 },
+      "warnPhaseTicks": { "v": 3, "hu": "Rövid WARN (~6 mp).", "min": 2, "max": 8 },
+      "escalatingPhaseTicks": { "v": 2, "hu": "Rövid ESC.", "min": 1, "max": 6 },
+      "ghostAlertsEnabled": { "v": true, "hu": "Ghost engedélyezve.", "min": 0, "max": 1 },
+      "mailVirusChanceUnknown": { "v": 0.18, "hu": "Unknown vírus %.", "min": 0, "max": 0.5 },
+      "mailVirusChanceSpoof": { "v": 0.25, "hu": "Spoof vírus %.", "min": 0, "max": 0.6 },
+      "avgNewIncidentIntervalTicks": { "v": 25, "hu": "Gyakoribb incidensek.", "min": 15, "max": 80 },
+      "phase4ProbabilityCap": { "v": 0.28, "hu": "Magas plafon fázis 4-ben.", "min": 0.1, "max": 0.5 },
+      "blackSwanMaxPerRun": { "v": 2, "hu": "Több swan / run.", "min": 0, "max": 4 },
+      "incidentSpikeMaxConcurrent": { "v": 3, "hu": "Swan spike: max párhuzamos incidens tick.", "min": 2, "max": 5 },
+      "incidentSpikeDurationTicks": { "v": 3, "hu": "Swan spike hossza.", "min": 1, "max": 8 }
+    }
+  },
+  "mail": {
+    "trustedSenders": {
+      "v": [
+        "J.HAMMOND",
+        "R.ARNOLD",
+        "I.MALCOLM",
+        "D.NAISH",
+        "R.TEMBO",
+        "L.GRANT",
+        "E.SATTALER",
+        "H.WU",
+        "M.CRON",
+        "B.GENNARO",
+        "JP-OS.REPORTER",
+        "JP-OS.ALERT"
+      ],
+      "hu": "Pontos From mező — 0% vírus megnyitáskor. Kézzel bővíthető.",
+      "min": 0,
+      "max": 0
+    },
+    "spoofSenderPatterns": {
+      "v": ["J.HAMM0ND", "J-HAMMOND", "INGEN-SYS", "JP-0S", "SECURITY-UPDATE", "UNKNOWN"],
+      "hu": "Spoof / ismeretlen — magasabb vírus esély (spoofChance). UNKNOWN = nem lista.",
+      "min": 0,
+      "max": 0
+    },
+    "malcolmPhilosophySpamChance": {
+      "v": 0.08,
+      "hu": "I.MALCOLM levelek között ritka „filozófáló” flavor (0% vírus, félrevezető szöveg).",
+      "min": 0,
+      "max": 0.3
+    },
+    "showSenderBeforeOpen": {
+      "v": true,
+      "hu": "Lista nézetben mindig látszik a From — döntés megnyitás előtt.",
+      "min": 0,
+      "max": 1
+    },
+    "infectionLevelOnVirus": {
+      "v": 55,
+      "hu": "Sikeres vírus megnyitás: infectionLevel ugrás (0–100).",
+      "min": 20,
+      "max": 100
+    }
+  },
+  "actions": {
+    "defaultQueueDelayTicks": {
+      "v": 0,
+      "hu": "Általános parancs várakozás — remote azonnali (0). Field külön ETA.",
+      "min": 0,
+      "max": 5
+    },
+    "patrolTeamCount": {
+      "v": 2,
+      "hu": "Patrol csapatok száma — mindkettő elfoglalt esetén átütemezés / prioritás.",
+      "min": 1,
+      "max": 4
+    },
+    "patrolTravelTicksBase": {
+      "v": 5,
+      "hu": "Patrol alap ETA tick (távolság módosíthatja).",
+      "min": 2,
+      "max": 15
+    },
+    "sedateHeliTravelTicks": {
+      "v": 5,
+      "hu": "Sedate: helikopter út tick (normal).",
+      "min": 2,
+      "max": 12
+    },
+    "sedateRampTicksLowStress": {
+      "v": 2,
+      "hu": "Sedate ramp stress <70.",
+      "min": 1,
+      "max": 6
+    },
+    "sedateRampTicksHighStress": {
+      "v": 4,
+      "hu": "Sedate ramp stress >=90.",
+      "min": 2,
+      "max": 8
+    },
+    "sealBreachTravelTicks": {
+      "v": 5,
+      "hu": "Seal breach crew ETA.",
+      "min": 3,
+      "max": 12
+    },
+    "generatorRestartTicks": {
+      "v": 6,
+      "hu": "Generator restart megszakítás nélküli ROUTE.",
+      "min": 3,
+      "max": 15
+    }
+  },
+  "bot": {
+    "defaultMaxTicks": {
+      "v": 500,
+      "hu": "Playtest bot max tick szám egy futásban.",
+      "min": 50,
+      "max": 5000
+    },
+    "logDecisions": {
+      "v": true,
+      "hu": "Bot tick döntések logolása (finomhangoláshoz).",
+      "min": 0,
+      "max": 1
+    },
+    "strategies": {
+      "v": [
+        "normal",
+        "perfect",
+        "chaotic",
+        "only_lose",
+        "only_win",
+        "open_all_virus",
+        "avoid_virus",
+        "open_all_mail"
+      ],
+      "hu": "PlaytestBotStrategy értékek — runPlaytestBot({ strategy: '...' }).",
+      "min": 0,
+      "max": 0
+    }
+  }
+}

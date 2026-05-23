@@ -3,6 +3,8 @@ import { UiTelemetryService } from '../../../core/services/ui-telemetry.service'
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
 import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
+import { HardRebootConfirmService } from '../../../core/services/hard-reboot-confirm.service';
+import { buildHardRebootPrompt } from '../../../core/utils/hard-reboot-prompt';
 import { SystemBootService } from '../../../core/services/system-boot.service';
 import { TerminalCommandHistory } from '../../../shared/terminal/terminal-command-history';
 import { TerminalAutoscrollDirective } from '../../../shared/terminal/terminal-autoscroll.directive';
@@ -24,6 +26,7 @@ import { TerminalPromptDirective } from '../../../shared/terminal/terminal-promp
 export class LogsActionsPanelComponent {
   private readonly sim = inject(SimulationBridgeService);
   private readonly boot = inject(SystemBootService);
+  private readonly hardReboot = inject(HardRebootConfirmService);
   private readonly history = new TerminalCommandHistory();
   readonly telemetry = inject(UiTelemetryService);
 
@@ -36,11 +39,26 @@ export class LogsActionsPanelComponent {
 
   runAction(type: string, params?: Record<string, string | number>): void {
     if (type === 'system_hard_reboot') {
-      this.boot.promptHardReboot();
+      this.requestHardReboot();
       return;
     }
     this.sim.queueAction(type, params);
     this.terminalOut.set(`> Queued: ${type}`);
+  }
+
+  requestHardReboot(): void {
+    const snap = this.sim.snapshot();
+    if (!snap) {
+      return;
+    }
+    const prompt = buildHardRebootPrompt(snap);
+    this.hardReboot.request(prompt);
+  }
+
+  confirmHardReboot(): void {
+    this.sim.queueAction('system_hard_reboot');
+    this.hardReboot.confirm();
+    this.terminalOut.set('> Hard reboot initiated.');
   }
 
   onTerminalKeydown(event: KeyboardEvent, input: HTMLInputElement): void {
@@ -59,7 +77,7 @@ export class LogsActionsPanelComponent {
       return;
     }
     if (line.toLowerCase() === 'system_hard_reboot') {
-      this.boot.promptHardReboot();
+      this.requestHardReboot();
       return;
     }
     const out = this.sim.runTerminal(line);

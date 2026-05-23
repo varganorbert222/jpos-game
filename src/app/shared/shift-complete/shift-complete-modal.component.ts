@@ -10,43 +10,36 @@ import {
   computeRunScore,
   formatPlayDuration,
 } from '../../core/utils/run-score';
+import { SimulationBridgeService } from '../../core/services/simulation-bridge.service';
 import type { SimulationSnapshot } from '../../../simulation';
 
 @Component({
-  selector: 'app-game-over-modal',
+  selector: 'app-shift-complete-modal',
   standalone: true,
   template: `
     <div class="jp-game-over-backdrop" role="presentation">
-      <div
-        class="jp-game-over"
-        role="alertdialog"
-        aria-labelledby="jp-game-over-title"
-        aria-describedby="jp-game-over-reason"
-      >
+      <div class="jp-game-over jp-shift-complete" role="dialog" aria-labelledby="shift-title">
         <div class="jp-game-over__head">
-          <h2 id="jp-game-over-title" class="jp-game-over__title">
-            SYSTEM COLLAPSE
-          </h2>
+          <h2 id="shift-title" class="jp-game-over__title">SHIFT OBJECTIVE COMPLETE</h2>
           <button
             type="button"
             class="jp-game-over__close"
             aria-label="Close"
-            (click)="close.emit()"
+            (click)="dismiss.emit()"
           >
             X
           </button>
         </div>
-        <p id="jp-game-over-reason" class="jp-game-over__reason jp-critical">
-          {{ reason() }}
+        <p class="jp-game-over__reason jp-nominal">
+          15-minute operator window logged. Performance index recorded.
         </p>
-
         <dl class="jp-game-over__stats">
           <div class="jp-game-over__stat">
             <dt>OPERATOR</dt>
             <dd>{{ operatorLabel() }}</dd>
           </div>
           <div class="jp-game-over__stat">
-            <dt>OPERATOR TIME ON STATION</dt>
+            <dt>OPERATOR TIME</dt>
             <dd>{{ playTime() }}</dd>
           </div>
           <div class="jp-game-over__stat">
@@ -54,38 +47,33 @@ import type { SimulationSnapshot } from '../../../simulation';
             <dd>{{ score() }}</dd>
           </div>
           <div class="jp-game-over__stat">
-            <dt>TICK / PHASE</dt>
-            <dd>{{ tickPhase() }}</dd>
+            <dt>OPERATOR SLOT</dt>
+            <dd>#{{ snapshot().operatorSlot + 1 }}</dd>
           </div>
         </dl>
-
+        @if (scoreboardRank()) {
+          <p class="jp-game-over__reason jp-info">{{ scoreboardRank() }}</p>
+        }
         <div class="jp-game-over__actions">
-          <button type="button" class="jp-btn" (click)="close.emit()">
-            CLOSE
-          </button>
-          <button
-            type="button"
-            class="jp-btn jp-critical"
-            (click)="restart.emit()"
-          >
-            RESTART
+          <button type="button" class="jp-btn" (click)="dismiss.emit()">CLOSE</button>
+          <button type="button" class="jp-btn jp-nominal" (click)="handoff()">
+            NEXT OPERATOR
           </button>
         </div>
       </div>
     </div>
   `,
-  styleUrl: './game-over-modal.component.scss',
+  styleUrl: '../game-over/game-over-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GameOverModalComponent {
+export class ShiftCompleteModalComponent {
   readonly snapshot = input.required<SimulationSnapshot>();
+  readonly dismiss = output<void>();
+  readonly handoffDone = output<void>();
+  /** Set by parent after persisting scoreboard entry. */
+  readonly rankHint = input<string | null>(null);
 
-  readonly close = output<void>();
-  readonly restart = output<void>();
-
-  readonly reason = computed(
-    () => this.snapshot().gameOverReason ?? 'Containment failure.',
-  );
+  private readonly sim = inject(SimulationBridgeService);
 
   readonly operatorLabel = computed(
     () => this.snapshot().operatorDisplayLabel || 'OPERATOR',
@@ -97,8 +85,11 @@ export class GameOverModalComponent {
 
   readonly score = computed(() => computeRunScore(this.snapshot()));
 
-  readonly tickPhase = computed(() => {
-    const s = this.snapshot();
-    return `T${s.tick} · PHASE ${s.escalationPhase}`;
-  });
+  readonly scoreboardRank = computed(() => this.rankHint());
+
+  handoff(): void {
+    this.sim.operatorHandoff();
+    this.handoffDone.emit();
+    this.dismiss.emit();
+  }
 }

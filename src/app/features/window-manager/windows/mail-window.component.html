@@ -24,7 +24,7 @@
         [class.jp-mail-win__row--active]="mail.selectedId() === m.id"
         (click)="onSelect(m.id)"
       >
-        <span class="jp-mail-win__from">{{ m.from }}</span>
+        <span class="jp-mail-win__from" [class.jp-warn]="isUntrusted(m)">{{ m.from }}</span>
         <span class="jp-mail-win__subj">{{ m.subject }}</span>
       </button>
     } @empty {
@@ -38,6 +38,11 @@
         <div><span class="jp-info">FROM:</span> {{ msg.from }}</div>
         <div><span class="jp-info">SUBJ:</span> {{ msg.subject }}</div>
         <div class="jp-mail-win__actions">
+          @if (mail.selectedCanTrust()) {
+            <button type="button" class="jp-btn jp-nominal" (click)="mail.trustSelectedSender()">
+              TRUST SENDER
+            </button>
+          }
           @if (mail.activeFolder() !== 'deleted') {
             <button type="button" class="jp-btn jp-warn" (click)="mail.deleteMessage(msg.id)">
               DELETE

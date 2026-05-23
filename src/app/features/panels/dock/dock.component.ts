@@ -6,6 +6,7 @@ import { WindowManagerService } from '../../window-manager/window-manager.servic
 export type DockApp =
   | 'security'
   | 'power'
+  | 'fence'
   | 'dino'
   | 'terminal'
   | 'weather'
@@ -27,6 +28,7 @@ export class DockComponent {
   readonly apps: { id: DockApp; label: string }[] = [
     { id: 'security', label: 'SECURITY' },
     { id: 'power', label: 'POWER GRID' },
+    { id: 'fence', label: 'FENCE MON' },
     { id: 'dino', label: 'DINO MON' },
     { id: 'terminal', label: 'TERMINAL' },
     { id: 'weather', label: 'WEATHER' },

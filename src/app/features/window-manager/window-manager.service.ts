@@ -29,6 +29,7 @@ const WINDOW_SIZES: Record<DockApp, { width: number; height: number }> = {
   terminal: { width: 820, height: 582 },
   security: { width: 720, height: 480 },
   power: { width: 680, height: 420 },
+  fence: { width: 760, height: 520 },
   dino: { width: 820, height: 520 },
   weather: { width: 600, height: 680 },
   files: { width: 780, height: 520 },
@@ -82,6 +83,7 @@ export class WindowManagerService {
     const titles: Record<DockApp, string> = {
       security: 'SECURITY_MONITOR',
       power: 'POWER_GRID.SYS',
+      fence: 'FENCE_PERIMETER.SYS',
       dino: 'BIO_MONITOR',
       terminal: 'JP-OS TERMINAL',
       weather: 'WEATHER_STATION',

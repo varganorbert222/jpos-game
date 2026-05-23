@@ -1,12 +1,50 @@
 import { ESCALATION_PHASES, EVENT_PROB_CAPS, ESCALATION_INTERVAL_MS } from '../constants';
+import { getDifficultyConfig, shiftWinElapsedMs } from '../gameplay-config';
 import type { EscalationPhaseId, SimulationState } from '../types';
 
 export function propagateConsequences(state: SimulationState): void {
   updateEscalationPhase(state);
+  updateShiftObjective(state);
+  updateCooldowns(state);
   updateStability(state);
   updateTelemetry(state);
+  updateRebootOutage(state);
   checkLossConditions(state);
   trimLogs(state);
+}
+
+function updateShiftObjective(state: SimulationState): void {
+  if (!state.shiftObjectiveWon && state.elapsedRealtimeMs >= shiftWinElapsedMs()) {
+    state.shiftObjectiveWon = true;
+    state.logEntries.push(
+      '[SHIFT] 15-minute objective complete — score logged. Operator handoff available to continue.',
+    );
+    state.alertEntries.push('SHIFT COMPLETE — SCORE READY');
+  }
+}
+
+function updateCooldowns(state: SimulationState): void {
+  if (state.hardRebootCooldownTicks > 0) {
+    state.hardRebootCooldownTicks--;
+  }
+  if (state.tourBonusTicksRemaining > 0) {
+    state.tourBonusTicksRemaining--;
+  }
+}
+
+function updateRebootOutage(state: SimulationState): void {
+  if (state.rebootPowerOutageTicks <= 0) {
+    return;
+  }
+  state.rebootPowerOutageTicks--;
+  state.globalBlackout = true;
+  for (const fence of state.fences) {
+    fence.voltage = Math.max(0, fence.voltage * 0.85);
+  }
+  if (state.rebootPowerOutageTicks === 0) {
+    state.globalBlackout = false;
+    state.logEntries.push('[SYS] Perimeter power rails restored after reboot.');
+  }
 }
 
 function updateEscalationPhase(state: SimulationState): void {
@@ -19,9 +57,14 @@ function updateEscalationPhase(state: SimulationState): void {
   }
 
   if (state.elapsedRealtimeMs - state.lastEscalationBumpMs >= ESCALATION_INTERVAL_MS) {
+    const diff = getDifficultyConfig(state.difficultyMode);
+    const cap = diff.phase4ProbabilityCap?.v ?? EVENT_PROB_CAPS.critical;
     state.eventProbMinor = Math.min(EVENT_PROB_CAPS.minor, state.eventProbMinor + 0.01);
     state.eventProbMajor = Math.min(EVENT_PROB_CAPS.major, state.eventProbMajor + 0.005);
-    state.eventProbCritical = Math.min(EVENT_PROB_CAPS.critical, state.eventProbCritical + 0.0025);
+    state.eventProbCritical = Math.min(
+      cap,
+      state.eventProbCritical + 0.0025,
+    );
     state.lastEscalationBumpMs = state.elapsedRealtimeMs;
   }
 }
@@ -48,6 +91,13 @@ function updateStability(state: SimulationState): void {
 }
 
 function updateTelemetry(state: SimulationState): void {
+  if (state.infectionLevel > 0 && state.tick % 3 === 0) {
+    state.telemetryCorruption = Math.min(100, state.telemetryCorruption + 4);
+    if (state.infectionLevel > 40 && state.tick % 6 === 0) {
+      state.alertEntries.push('WARN: Telemetry drift — verify on grid');
+    }
+  }
+
   if (state.weather === 'Storm') {
     for (const cam of state.cameras) {
       if (cam.state === 'Online' && state.tick % 4 === 0) {
@@ -75,18 +125,6 @@ function checkLossConditions(state: SimulationState): void {
 
   if (state.stability <= 0) {
     endGame(state, 'Stability reached zero — park collapse.');
-    return;
-  }
-  if (state.breachCount >= 3) {
-    endGame(state, 'Three fence breaches — containment failure.');
-    return;
-  }
-  if (state.visitorSectorCompromisedTicks > 20) {
-    endGame(state, 'Visitor sector compromised beyond recovery threshold.');
-    return;
-  }
-  if (state.blackoutTicks > 30) {
-    endGame(state, 'Extended blackout exceeded 30 ticks.');
   }
 }
 

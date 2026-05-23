@@ -67,7 +67,13 @@ export class JpTourService {
       return;
     }
     if (snap.breachCount > 0) {
-      this.lastMessage.set('ERR: containment breach — tours locked');
+      if (snap.difficultyMode === 'tutorial') {
+        this.lastMessage.set(
+          'ERR: containment breach — tours locked. Training: seal_breach [ID] or reset_fence [ID] on breached segment.',
+        );
+      } else {
+        this.lastMessage.set('ERR: containment breach — tours locked');
+      }
       return;
     }
     if (this.run().active) {
@@ -90,6 +96,8 @@ export class JpTourService {
         zoneId: 5,
       })),
     );
+    this.sim.startTourBonus();
+    this.sim.reportTutorialProgress({ type: 'tour_start' });
     this.lastMessage.set('Tour departure authorized. TOUR-01 boarding.');
   }
 

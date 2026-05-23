@@ -4,6 +4,7 @@ import type { TrendIndicator } from '../../../core/services/ui-telemetry.service
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
 import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
+import { GameActionControlsComponent } from '../../../shared/game-actions/game-action-controls.component';
 
 interface DinoRow {
   id: number;
@@ -17,7 +18,7 @@ interface DinoRow {
 @Component({
   selector: 'app-dino-window',
   standalone: true,
-  imports: [OsIconComponent, RetroScrollDirective],
+  imports: [OsIconComponent, RetroScrollDirective, GameActionControlsComponent],
   template: `
     <div class="win-panel" jpRetroScroll>
       <p>
@@ -48,6 +49,7 @@ interface DinoRow {
           }
         </tbody>
       </table>
+      <app-game-action-controls context="dino" />
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

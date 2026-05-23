@@ -8,6 +8,7 @@ export type BootSectionId =
   | 'next_command'
   | 'window_security'
   | 'window_power'
+  | 'window_fence'
   | 'window_dino'
   | 'window_terminal'
   | 'window_weather'
@@ -40,6 +41,7 @@ export const BOOT_SECTION_MESSAGES: Record<BootSectionId, string> = {
   next_command: 'STARTING COMMAND ADVISORY MODULE...',
   window_security: 'BOOTING SECURITY DESKTOP...',
   window_power: 'BOOTING POWER CONTROL DESKTOP...',
+  window_fence: 'BOOTING FENCE PERIMETER DESKTOP...',
   window_dino: 'BOOTING BIO-MONITOR DESKTOP...',
   window_terminal: 'BOOTING JP-OS TERMINAL...',
   window_weather: 'BOOTING WEATHER STATION...',

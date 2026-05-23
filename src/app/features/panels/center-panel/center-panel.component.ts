@@ -5,6 +5,7 @@ import { ZoneMapCanvasComponent } from '../../../rendering/zone-map-canvas/zone-
 import { CameraFeedsComponent } from '../../../rendering/camera-feeds/camera-feeds.component';
 import { SectionLoaderComponent } from '../../../shared/boot/section-loader.component';
 import { ParkGridFenceStatusComponent } from '../../../shared/park-grid/park-grid-fence-status.component';
+import { GameActionControlsComponent } from '../../../shared/game-actions/game-action-controls.component';
 
 @Component({
   selector: 'app-center-panel',
@@ -15,6 +16,7 @@ import { ParkGridFenceStatusComponent } from '../../../shared/park-grid/park-gri
     CameraFeedsComponent,
     SectionLoaderComponent,
     ParkGridFenceStatusComponent,
+    GameActionControlsComponent,
   ],
   templateUrl: './center-panel.component.html',
   styleUrl: './center-panel.component.scss',

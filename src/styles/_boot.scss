@@ -284,6 +284,31 @@
   line-height: var(--jp-line);
 }
 
+.jp-login-screen__scores {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--jp-border-dim, #2a4a2a);
+  font-size: 0.75rem;
+}
+
+.jp-login-screen__scores-title {
+  margin: 0 0 0.35rem;
+  letter-spacing: 0.06em;
+}
+
+.jp-login-screen__scores-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.jp-login-screen__scores-meta {
+  opacity: 0.75;
+}
+
+.jp-login-screen__scores-personal {
+  margin: 0.5rem 0 0;
+}
+
 .jp-login-screen__hint kbd {
   font-family: var(--jp-font);
   padding: 0 4px;

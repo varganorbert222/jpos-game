@@ -10,12 +10,16 @@ import {
   inject,
 } from '@angular/core';
 import {
+  fenceMarkersInZone,
+  type FenceMapMarker,
+} from '../../core/constants/fence-perimeter.config';
+import {
   ISLA_NUBLAR_OUTLINE,
   ISLA_NUBLAR_ZONES,
   ZONE_STATE_COLORS,
   type ZoneMapState,
 } from '../../core/constants/isla-nublar-map.config';
-import type { SimulationSnapshot, ZoneId } from '../../../simulation';
+import type { Fence, SimulationSnapshot, ZoneId } from '../../../simulation';
 import { SimulationBridgeService } from '../../core/services/simulation-bridge.service';
 
 @Component({
@@ -28,7 +32,9 @@ import { SimulationBridgeService } from '../../core/services/simulation-bridge.s
         @for (z of legend(); track z.code) {
           <li [attr.data-zone]="z.id" [attr.data-state]="z.state">
             <span class="map-legend__swatch" [style.background]="z.color"></span>
-            <span>{{ z.code }}: {{ z.label }} ({{ z.state }})</span>
+            <span class="map-legend__zone-line">
+              <strong>{{ z.code }}</strong> Z{{ z.id }} {{ z.label }} — {{ z.fenceSummary }}
+            </span>
           </li>
         }
       </ul>
@@ -49,12 +55,15 @@ export class ZoneMapCanvasComponent implements AfterViewInit, OnDestroy {
     }
     return ISLA_NUBLAR_ZONES.map((z) => {
       const state = this.zoneState(snap, z.id);
+      const fences = snap.fences.filter((f) => f.zoneId === z.id);
+      const fenceSummary = fences.map((f) => `F${f.id}`).join(', ');
       return {
         id: z.id,
         code: z.code,
         label: z.label,
         state,
         color: ZONE_STATE_COLORS[state],
+        fenceSummary,
       };
     });
   });
@@ -145,14 +154,21 @@ export class ZoneMapCanvasComponent implements AfterViewInit, OnDestroy {
 
       ctx.fillStyle = state === 'blackout' ? '#cccccc' : '#000000';
       ctx.font = 'bold 12px Courier New, monospace';
-      ctx.fillText(zone.code, zx + 6, zy + 16);
-      ctx.font = 'bold 10px Courier New, monospace';
-      ctx.fillText(zone.label.toUpperCase(), zx + 6, zy + 30);
-      ctx.fillText(state.toUpperCase(), zx + 6, zy + zh - 8);
+      ctx.fillText(`${zone.code} · Z${zone.id}`, zx + 6, zy + 14);
+      ctx.font = 'bold 9px Courier New, monospace';
+      ctx.fillText(zone.label.toUpperCase(), zx + 6, zy + 26);
+
+      const markers = fenceMarkersInZone(zone.id);
+      for (const marker of markers) {
+        this.drawFenceMarker(ctx, snap, marker, zx, zy, zw, zh, state === 'blackout');
+      }
+
+      ctx.fillStyle = state === 'blackout' ? '#cccccc' : '#102030';
+      ctx.font = 'bold 9px Courier New, monospace';
+      ctx.fillText(state.toUpperCase(), zx + 6, zy + zh - 6);
 
       const dinoCount = snap.dinosaurs.filter((d) => d.zoneId === zone.id).length;
-      ctx.fillStyle = '#102030';
-      ctx.fillText(`D:${dinoCount}`, zx + zw - 40, zy + zh - 8);
+      ctx.fillText(`D:${dinoCount}`, zx + zw - 36, zy + zh - 6);
     }
 
     if (snap.globalBlackout) {
@@ -162,5 +178,49 @@ export class ZoneMapCanvasComponent implements AfterViewInit, OnDestroy {
       ctx.font = 'bold 18px Courier New, monospace';
       ctx.fillText('GRID: BLACKOUT', 360, h / 2);
     }
+  }
+
+  private drawFenceMarker(
+    ctx: CanvasRenderingContext2D,
+    snap: SimulationSnapshot,
+    marker: FenceMapMarker,
+    zx: number,
+    zy: number,
+    zw: number,
+    zh: number,
+    blackout: boolean,
+  ): void {
+    const fence = snap.fences[marker.fenceId];
+    if (!fence) {
+      return;
+    }
+    const px = zx + marker.nx * zw;
+    const py = zy + marker.ny * zh;
+
+    ctx.fillStyle = blackout ? '#333333' : '#102030';
+    ctx.fillRect(px - 2, py - 10, 54, 22);
+    ctx.strokeStyle = blackout ? '#888888' : '#e8f0f8';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(px - 2, py - 10, 54, 22);
+
+    const textColor = blackout ? '#cccccc' : this.fenceLabelColor(fence);
+    ctx.fillStyle = textColor;
+    ctx.font = 'bold 9px Courier New, monospace';
+    ctx.fillText(`F${fence.id}${marker.segment}`, px, py);
+    ctx.font = '8px Courier New, monospace';
+    ctx.fillText(`${Math.round(fence.voltage)}V`, px, py + 9);
+  }
+
+  private fenceLabelColor(fence: Fence): string {
+    if (fence.state === 'Breached') {
+      return '#ff4444';
+    }
+    if (fence.state === 'Sparking' || fence.state === 'Intermittent') {
+      return '#ff8800';
+    }
+    if (fence.state === 'Unstable' || fence.voltage < 50) {
+      return '#ffcc33';
+    }
+    return '#102030';
   }
 }

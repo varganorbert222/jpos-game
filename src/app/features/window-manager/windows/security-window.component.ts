@@ -3,10 +3,11 @@ import { UiTelemetryService } from '../../../core/services/ui-telemetry.service'
 import { JpStatusIconComponent, type JpStatusKind } from '../../../shared/jp-status-icon/jp-status-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
 import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
+import { GameActionControlsComponent } from '../../../shared/game-actions/game-action-controls.component';
 @Component({
   selector: 'app-security-window',
   standalone: true,
-  imports: [JpStatusIconComponent, RetroScrollDirective],
+  imports: [JpStatusIconComponent, RetroScrollDirective, GameActionControlsComponent],
   template: `
     <div class="win-panel" data-app="security" jpRetroScroll>
       <p>
@@ -37,6 +38,7 @@ import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.
           }
         </tbody>
       </table>
+      <app-game-action-controls context="security" />
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

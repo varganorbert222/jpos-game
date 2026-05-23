@@ -47,6 +47,15 @@ export function updateFences(state: SimulationState): void {
     deriveFenceState(fence);
 
     if (fence.integrity <= 0 || fence.stress >= 100) {
+      if (
+        state.difficultyMode === 'tutorial' &&
+        !state.tutorialScriptComplete
+      ) {
+        fence.stress = Math.min(99, fence.stress);
+        fence.integrity = Math.max(1, fence.integrity);
+        deriveFenceState(fence);
+        continue;
+      }
       if (fence.state !== 'Breached') {
         fence.state = 'Breached';
         state.breachCount++;

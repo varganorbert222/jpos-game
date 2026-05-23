@@ -7,9 +7,11 @@ import {
   ZONE_COUNT,
   ZONE_NAMES,
 } from './constants';
+import { getDifficultyConfig } from './gameplay-config';
 import type {
   Camera,
   Dinosaur,
+  DifficultyMode,
   Fence,
   Generator,
   SimulationState,
@@ -102,11 +104,41 @@ function buildDinosaurs(): Dinosaur[] {
   return dinosaurs;
 }
 
-export function createInitialState(seed = 0x4a504f53): SimulationState {
+function baseEventProbs(difficulty: DifficultyMode): {
+  minor: number;
+  major: number;
+  critical: number;
+} {
+  switch (difficulty) {
+    case 'easy':
+      return { minor: 0.06, major: 0.02, critical: 0.004 };
+    case 'veteran':
+      return { minor: 0.12, major: 0.04, critical: 0.01 };
+    case 'tutorial':
+      return { minor: 0.02, major: 0.005, critical: 0 };
+    default:
+      return { minor: 0.08, major: 0.03, critical: 0.008 };
+  }
+}
+
+export function createInitialState(
+  seed = 0x4a504f53,
+  difficulty: DifficultyMode = 'normal',
+): SimulationState {
+  const probs = baseEventProbs(difficulty);
+  const label = getDifficultyConfig(difficulty).label.v;
   return {
     tick: 0,
     elapsedRealtimeMs: 0,
     rngSeed: seed,
+    runSeed: seed,
+    difficultyMode: difficulty,
+    infectionLevel: 0,
+    shiftObjectiveWon: false,
+    operatorSlot: 0,
+    hardRebootCooldownTicks: 0,
+    rebootPowerOutageTicks: 0,
+    tourBonusTicksRemaining: 0,
     stability: 100,
     breachCount: 0,
     blackoutTicks: 0,
@@ -122,9 +154,18 @@ export function createInitialState(seed = 0x4a504f53): SimulationState {
     teams: Array.from({ length: MAINTENANCE_TEAM_COUNT }, (_, id) => ({
       id,
       zoneId: (id * 2) as ZoneId,
+      targetZoneId: null,
       fatigue: 20,
       busyTicks: 0,
+      travelTicksRemaining: 0,
     })),
+    fieldOps: [],
+    nextFieldOpId: 1,
+    heliTicksRemaining: 0,
+    heliTargetDinoId: null,
+    heliPhase: 'idle' as const,
+    ticksSinceLastIncidentStart: 0,
+    recoveryQuietTicksLeft: 0,
     helicopter: { zoneId: 5, enabled: true, busyTicks: 0 },
     resources: {
       fuel: 100,
@@ -136,18 +177,34 @@ export function createInitialState(seed = 0x4a504f53): SimulationState {
     activeEvents: [],
     queuedEvents: [],
     actionQueue: [],
-    eventProbMinor: 0.12,
-    eventProbMajor: 0.04,
-    eventProbCritical: 0.01,
+    eventProbMinor: probs.minor,
+    eventProbMajor: probs.major,
+    eventProbCritical: probs.critical,
     lastEscalationBumpMs: 0,
     autosaveDue: false,
     gameOver: false,
     gameOverReason: null,
-    logEntries: ['[BOOT] Jurassic Park Operations OS v3.0 online.'],
+    logEntries: [
+      `[BOOT] Jurassic Park Operations OS online — shift mode: ${label}.`,
+      `[BOOT] Run seed=0x${seed.toString(16).toUpperCase()}`,
+    ],
     alertEntries: [],
     operatorCriticalCount: 0,
     telemetryCorruption: 0,
     nextEventId: 1,
     nextActionId: 1,
+    operatorUsername: '',
+    operatorDisplayLabel: 'OPERATOR',
+    tutorialStep: 0,
+    tutorialBegun: false,
+    tutorialAwaitingAction: false,
+    tutorialAwaitingStepCompletion: false,
+    tutorialInterlude: false,
+    tutorialInterludeUntilTick: 0,
+    tutorialPendingStepIndex: 0,
+    tutorialObjective: '',
+    tutorialScriptComplete: false,
+    tutorialMailDemoPending: false,
+    blackSwansThisRun: 0,
   };
 }

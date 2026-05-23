@@ -26,6 +26,7 @@ export class MailWindowComponent implements OnInit {
   readonly folders: { id: MailFolder; label: string }[] = [
     { id: 'inbox', label: 'INBOX' },
     { id: 'unread', label: 'UNREAD' },
+    { id: 'spam', label: 'SPAM' },
     { id: 'deleted', label: 'DELETED' },
   ];
 
@@ -35,5 +36,9 @@ export class MailWindowComponent implements OnInit {
 
   onSelect(id: string): void {
     this.mail.select(id);
+  }
+
+  isUntrusted(m: { from: string }): boolean {
+    return !this.mail.isTrustedSender(m.from);
   }
 }
