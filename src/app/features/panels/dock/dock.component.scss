@@ -7,6 +7,28 @@
   border-top: 2px solid var(--jp-irix-bevel-dark);
 }
 
+.dock-page-btn {
+  flex: 0 0 auto;
+  min-width: 28px;
+  padding: 4px 8px;
+}
+
+.jp-dock-btn--highlight {
+  outline: 2px solid var(--jp-term-warn);
+  animation: jp-dock-highlight 1s steps(2, end) infinite;
+}
+
+@keyframes jp-dock-highlight {
+  0%,
+  49% {
+    background: var(--jp-irix-title-active);
+  }
+  50%,
+  100% {
+    background: var(--jp-irix-title);
+  }
+}
+
 .jp-dock-btn {
   flex: 1;
   display: flex;

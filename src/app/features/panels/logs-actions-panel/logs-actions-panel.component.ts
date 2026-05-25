@@ -1,91 +1,85 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { UiTelemetryService } from '../../../core/services/ui-telemetry.service';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
-import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
-import { HardRebootConfirmService } from '../../../core/services/hard-reboot-confirm.service';
-import { buildHardRebootPrompt } from '../../../core/utils/hard-reboot-prompt';
-import { SystemBootService } from '../../../core/services/system-boot.service';
-import { TerminalCommandHistory } from '../../../shared/terminal/terminal-command-history';
-import { TerminalAutoscrollDirective } from '../../../shared/terminal/terminal-autoscroll.directive';
-import { TerminalPromptDirective } from '../../../shared/terminal/terminal-prompt.directive';
+import { UiSelectionService } from '../../../core/services/ui-selection.service';
+import { PlayerActionService } from '../../../core/services/player-action.service';
+import { getNextCommandSuggestions } from '../../../../simulation/terminal-suggestions';
+import {
+  OPERATOR_QUICK_ACTIONS,
+  type OperatorActionDef,
+} from '../../../core/constants/operator-actions.config';
+import { SectionLoaderComponent } from '../../../shared/boot/section-loader.component';
+import { CompactTerminalComponent } from '../../../shared/terminal/compact-terminal.component';
 
 @Component({
   selector: 'app-logs-actions-panel',
   standalone: true,
-  imports: [
-    OsIconComponent,
-    RetroScrollDirective,
-    TerminalAutoscrollDirective,
-    TerminalPromptDirective,
-  ],
+  imports: [OsIconComponent, SectionLoaderComponent, CompactTerminalComponent],
   templateUrl: './logs-actions-panel.component.html',
   styleUrl: './logs-actions-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogsActionsPanelComponent {
   private readonly sim = inject(SimulationBridgeService);
-  private readonly boot = inject(SystemBootService);
-  private readonly hardReboot = inject(HardRebootConfirmService);
-  private readonly history = new TerminalCommandHistory();
-  readonly telemetry = inject(UiTelemetryService);
+  private readonly selection = inject(UiSelectionService);
+  private readonly actions = inject(PlayerActionService);
 
-  readonly logs = computed(() => {
-    const s = this.sim.snapshot();
-    return s?.logEntries.slice(-14).reverse() ?? [];
+  readonly operatorActions = OPERATOR_QUICK_ACTIONS;
+
+  readonly nextSuggestions = computed(() => {
+    const state = this.sim.snapshot();
+    return state ? getNextCommandSuggestions(state, 2) : [];
   });
-  readonly terminalOut = signal('> JP-OS ready. Type help.');
-  readonly corruptOutput = computed(() => this.telemetry.corruption() > 55);
 
-  runAction(type: string, params?: Record<string, string | number>): void {
-    if (type === 'system_hard_reboot') {
-      this.requestHardReboot();
+  isActionBlocked(action: OperatorActionDef): boolean {
+    const params = this.resolveParams(action);
+    if (params === 'needs_manual' || params === undefined) {
+      if (action.paramKind === null) {
+        return this.actions.isDuplicate(action.type);
+      }
+      return false;
+    }
+    return this.actions.isDuplicate(action.type, params);
+  }
+
+  runAction(action: OperatorActionDef): void {
+    const params = this.resolveParams(action);
+    if (params === 'needs_manual') {
       return;
     }
-    this.sim.queueAction(type, params);
-    this.terminalOut.set(`> Queued: ${type}`);
+    this.actions.tryQueue(action.type, params);
   }
 
-  requestHardReboot(): void {
-    const snap = this.sim.snapshot();
-    if (!snap) {
-      return;
+  private resolveParams(
+    action: OperatorActionDef,
+  ): Record<string, number> | undefined | 'needs_manual' {
+    if (action.paramKind === null) {
+      return undefined;
     }
-    const prompt = buildHardRebootPrompt(snap);
-    this.hardReboot.request(prompt);
-  }
-
-  confirmHardReboot(): void {
-    this.sim.queueAction('system_hard_reboot');
-    this.hardReboot.confirm();
-    this.terminalOut.set('> Hard reboot initiated.');
-  }
-
-  onTerminalKeydown(event: KeyboardEvent, input: HTMLInputElement): void {
-    this.history.handleKeydown(event, input);
-  }
-
-  onTerminalSubmit(input: HTMLInputElement): void {
-    const line = input.value.trim();
-    if (!line) {
-      return;
+    const sel = this.selection.selection();
+    if (!sel) {
+      return 'needs_manual';
     }
-    this.history.push(line);
-    input.value = '';
-    if (line.toLowerCase() === 'cls') {
-      this.terminalOut.set('');
-      return;
+    if (action.paramKind === 'zone') {
+      return { zone: sel.zoneId };
     }
-    if (line.toLowerCase() === 'system_hard_reboot') {
-      this.requestHardReboot();
-      return;
+    if (action.paramKind === 'id') {
+      if (sel.fenceId != null) {
+        return { id: sel.fenceId };
+      }
+      if (sel.cameraId != null) {
+        return { id: sel.cameraId };
+      }
+      if (sel.generatorId != null) {
+        return { id: sel.generatorId };
+      }
+      const fenceInZone = this.sim.snapshot()?.fences.find((f) => f.zoneId === sel.zoneId);
+      if (fenceInZone) {
+        return { id: fenceInZone.id };
+      }
+      return 'needs_manual';
     }
-    const out = this.sim.runTerminal(line);
-    this.setTerminalOut(`> ${line}\n${out}`);
+    return 'needs_manual';
   }
 
-  private setTerminalOut(text: string): void {
-    const lines = text.split('\n').slice(-12);
-    this.terminalOut.set(lines.join('\n'));
-  }
 }

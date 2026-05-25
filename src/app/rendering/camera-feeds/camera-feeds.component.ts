@@ -6,8 +6,13 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { CAMERA_FEED_ASSETS } from '../../core/constants/camera-feeds.config';
+import {
+  camerasForZone,
+  firstCameraPerZone,
+} from '../../core/constants/camera-feeds.config';
 import { SimulationBridgeService } from '../../core/services/simulation-bridge.service';
+import { UiSelectionService } from '../../core/services/ui-selection.service';
+import type { ZoneId } from '../../../simulation';
 import {
   JpStatusIconComponent,
   type JpStatusKind,
@@ -33,15 +38,24 @@ export interface CameraFeedView {
 })
 export class CameraFeedsComponent {
   private readonly sim = inject(SimulationBridgeService);
+  readonly selection = inject(UiSelectionService);
   readonly page = signal(0);
   readonly feedsPerPage = 3;
+
+  readonly feedModeLabel = computed(() => {
+    const z = this.selection.zoneId();
+    return z != null ? `ZONE Z${z} CAMERAS` : 'ALL ZONES — FIRST CAM / PAGE';
+  });
 
   readonly feeds = computed((): CameraFeedView[] => {
     const snap = this.sim.snapshot();
     if (!snap) {
       return [];
     }
-    return CAMERA_FEED_ASSETS.slice(0, 6).map((asset) => {
+    const zoneId = this.selection.zoneId();
+    const assets =
+      zoneId != null ? camerasForZone(zoneId) : firstCameraPerZone();
+    return assets.map((asset) => {
       const cam = snap.cameras.find((c) => c.id === asset.cameraId) ?? {
         id: asset.cameraId,
         state: 'Offline' as const,
@@ -75,6 +89,10 @@ export class CameraFeedsComponent {
 
   constructor() {
     effect(() => {
+      this.selection.zoneId();
+      this.page.set(0);
+    });
+    effect(() => {
       const pages = this.pageCount();
       if (this.page() >= pages) {
         this.page.set(Math.max(0, pages - 1));
@@ -94,6 +112,10 @@ export class CameraFeedsComponent {
       return;
     }
     this.page.update((value) => value + 1);
+  }
+
+  selectFeed(feed: CameraFeedView): void {
+    this.selection.selectCamera(feed.id, feed.zoneId as ZoneId);
   }
 
   private statusKind(state: string): JpStatusKind {

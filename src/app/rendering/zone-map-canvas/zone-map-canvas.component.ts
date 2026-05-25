@@ -21,19 +21,46 @@ import {
 } from '../../core/constants/isla-nublar-map.config';
 import type { Fence, SimulationSnapshot, ZoneId } from '../../../simulation';
 import { SimulationBridgeService } from '../../core/services/simulation-bridge.service';
+import { UiSelectionService } from '../../core/services/ui-selection.service';
+
+const MAP_SIZE = 600;
+const MAP_W = MAP_SIZE;
+const MAP_H = MAP_SIZE;
 
 @Component({
   selector: 'app-zone-map-canvas',
   standalone: true,
   template: `
     <div class="map-wrap" data-region="isla-nublar-map">
-      <canvas #mapCanvas width="900" height="360"></canvas>
-      <ul class="map-legend">
+      <div class="map-body">
+        <div class="map-canvas-frame">
+        <canvas
+          #mapCanvas
+          [attr.width]="mapSize"
+          [attr.height]="mapSize"
+          class="map-canvas"
+          (click)="onCanvasClick($event)"
+        ></canvas>
+        </div>
+      </div>
+      <ul class="map-legend map-legend--compact">
         @for (z of legend(); track z.code) {
-          <li [attr.data-zone]="z.id" [attr.data-state]="z.state">
+          <li
+            [attr.data-zone]="z.id"
+            [attr.data-state]="z.state"
+            [attr.title]="z.label + ' — ' + z.fenceSummary"
+            [class.map-legend__item--selected]="selection.isZoneSelected(z.id)"
+            [class.map-legend__item--dim]="
+              selection.zoneId() !== null && !selection.isZoneSelected(z.id)
+            "
+            role="button"
+            tabindex="0"
+            (click)="onLegendZone(z.id)"
+            (keydown.enter)="onLegendZone(z.id)"
+          >
             <span class="map-legend__swatch" [style.background]="z.color"></span>
             <span class="map-legend__zone-line">
-              <strong>{{ z.code }}</strong> Z{{ z.id }} {{ z.label }} — {{ z.fenceSummary }}
+              <strong>{{ z.code }}</strong> Z{{ z.id }}: {{ z.fenceSummary }}
             </span>
           </li>
         }
@@ -44,8 +71,11 @@ import { SimulationBridgeService } from '../../core/services/simulation-bridge.s
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ZoneMapCanvasComponent implements AfterViewInit, OnDestroy {
+  readonly mapSize = MAP_SIZE;
+
   @ViewChild('mapCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   private readonly sim = inject(SimulationBridgeService);
+  readonly selection = inject(UiSelectionService);
   private ctx: CanvasRenderingContext2D | null = null;
 
   readonly legend = computed(() => {
@@ -71,10 +101,74 @@ export class ZoneMapCanvasComponent implements AfterViewInit, OnDestroy {
   constructor() {
     effect(() => {
       const snap = this.sim.snapshot();
+      this.selection.selection();
       if (snap && this.ctx) {
         this.draw(snap);
       }
     });
+  }
+
+  onLegendZone(zoneId: ZoneId): void {
+    this.selection.selectZone(zoneId);
+  }
+
+  onCanvasClick(event: MouseEvent): void {
+    const canvas = this.canvasRef.nativeElement;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = MAP_W / rect.width;
+    const scaleY = MAP_H / rect.height;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
+    const snap = this.sim.snapshot();
+    if (!snap) {
+      return;
+    }
+    const fenceHit = this.hitFenceMarker(snap, x, y);
+    if (fenceHit) {
+      this.selection.selectFence(fenceHit.fenceId, fenceHit.zoneId);
+      return;
+    }
+    const zoneId = this.hitZone(x, y);
+    if (zoneId != null) {
+      this.selection.selectZone(zoneId);
+      return;
+    }
+    this.selection.clear();
+  }
+
+  private hitZone(x: number, y: number): ZoneId | null {
+    for (let i = ISLA_NUBLAR_ZONES.length - 1; i >= 0; i--) {
+      const zone = ISLA_NUBLAR_ZONES[i]!;
+      const zx = zone.x * (MAP_W - 32) + 16;
+      const zy = zone.y * (MAP_H - 48) + 24;
+      const zw = zone.w * (MAP_W - 32);
+      const zh = zone.h * (MAP_H - 48);
+      if (x >= zx && x <= zx + zw && y >= zy && y <= zy + zh) {
+        return zone.id;
+      }
+    }
+    return null;
+  }
+
+  private hitFenceMarker(
+    snap: SimulationSnapshot,
+    x: number,
+    y: number,
+  ): { fenceId: number; zoneId: ZoneId } | null {
+    for (const zone of ISLA_NUBLAR_ZONES) {
+      const zx = zone.x * (MAP_W - 32) + 16;
+      const zy = zone.y * (MAP_H - 48) + 24;
+      const zw = zone.w * (MAP_W - 32);
+      const zh = zone.h * (MAP_H - 48);
+      for (const marker of fenceMarkersInZone(zone.id)) {
+        const px = zx + marker.nx * zw;
+        const py = zy + marker.ny * zh;
+        if (x >= px - 4 && x <= px + 58 && y >= py - 12 && y <= py + 14) {
+          return { fenceId: marker.fenceId, zoneId: zone.id };
+        }
+      }
+    }
+    return null;
   }
 
   ngAfterViewInit(): void {
@@ -112,8 +206,9 @@ export class ZoneMapCanvasComponent implements AfterViewInit, OnDestroy {
 
   private draw(snap: SimulationSnapshot): void {
     const ctx = this.ctx!;
-    const w = 900;
-    const h = 360;
+    const w = MAP_W;
+    const h = MAP_H;
+    const selectedZone = this.selection.zoneId();
     ctx.fillStyle = '#6ba1d8';
     ctx.fillRect(0, 0, w, h);
     ctx.fillStyle = '#5a8eb8';
@@ -148,8 +243,9 @@ export class ZoneMapCanvasComponent implements AfterViewInit, OnDestroy {
 
       ctx.fillStyle = ZONE_STATE_COLORS[state];
       ctx.fillRect(zx, zy, zw, zh);
-      ctx.strokeStyle = '#102030';
-      ctx.lineWidth = state === 'critical' ? 3 : 2;
+      const isSelected = selectedZone === zone.id;
+      ctx.strokeStyle = isSelected ? '#ffff66' : '#102030';
+      ctx.lineWidth = isSelected ? 4 : state === 'critical' ? 3 : 2;
       ctx.strokeRect(zx, zy, zw, zh);
 
       ctx.fillStyle = state === 'blackout' ? '#cccccc' : '#000000';
@@ -176,7 +272,7 @@ export class ZoneMapCanvasComponent implements AfterViewInit, OnDestroy {
       ctx.fillRect(16, 24, w - 32, h - 48);
       ctx.fillStyle = '#cc2222';
       ctx.font = 'bold 18px Courier New, monospace';
-      ctx.fillText('GRID: BLACKOUT', 360, h / 2);
+      ctx.fillText('GRID: BLACKOUT', w / 2 - 72, h / 2);
     }
   }
 

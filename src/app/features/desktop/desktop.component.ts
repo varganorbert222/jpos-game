@@ -1,28 +1,36 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  HostListener,
   computed,
   inject,
 } from '@angular/core';
-import { AlertsPanelComponent } from '../panels/alerts-panel/alerts-panel.component';
+import { IncidentFeedPanelComponent } from '../panels/incident-feed-panel/incident-feed-panel.component';
 import { CenterPanelComponent } from '../panels/center-panel/center-panel.component';
-import { CliPanelComponent } from '../panels/cli-panel/cli-panel.component';
+import { LogsActionsPanelComponent } from '../panels/logs-actions-panel/logs-actions-panel.component';
+import { TutorialGuidePanelComponent } from '../panels/tutorial-guide-panel/tutorial-guide-panel.component';
 import { DockComponent } from '../panels/dock/dock.component';
 import { WindowManagerComponent } from '../window-manager/window-manager.component';
 import { SimulationBridgeService } from '../../core/services/simulation-bridge.service';
 import { SystemBootService } from '../../core/services/system-boot.service';
 import { AuthService } from '../../core/services/auth.service';
 import { formatElapsedClock } from '../../core/utils/run-score';
+import { DesktopLayoutService } from '../../core/services/desktop-layout.service';
+import { UiSelectionService } from '../../core/services/ui-selection.service';
+import { HardRebootConfirmService } from '../../core/services/hard-reboot-confirm.service';
+import { buildHardRebootPrompt } from '../../core/utils/hard-reboot-prompt';
+import type { ZoneId } from '../../../simulation';
 
 @Component({
   selector: 'app-desktop',
   standalone: true,
   imports: [
-    AlertsPanelComponent,
+    IncidentFeedPanelComponent,
     CenterPanelComponent,
-    CliPanelComponent,
+    LogsActionsPanelComponent,
     DockComponent,
     WindowManagerComponent,
+    TutorialGuidePanelComponent,
   ],
   templateUrl: './desktop.component.html',
   styleUrl: './desktop.component.scss',
@@ -30,8 +38,11 @@ import { formatElapsedClock } from '../../core/utils/run-score';
 })
 export class DesktopComponent {
   private readonly sim = inject(SimulationBridgeService);
+  private readonly hardReboot = inject(HardRebootConfirmService);
   readonly boot = inject(SystemBootService);
   readonly auth = inject(AuthService);
+  readonly layout = inject(DesktopLayoutService);
+  readonly selection = inject(UiSelectionService);
   readonly snapshot = this.sim.snapshot;
 
   readonly tick = computed(() => this.snapshot()?.tick ?? 0);
@@ -82,8 +93,41 @@ export class DesktopComponent {
   });
 
   logout(): void {
+    this.selection.clear();
     this.auth.logout();
     this.boot.returnToLogin();
+  }
+
+  requestHardReboot(): void {
+    const snap = this.snapshot();
+    if (!snap) {
+      return;
+    }
+    this.hardReboot.request(buildHardRebootPrompt(snap));
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onGlobalKeydown(event: KeyboardEvent): void {
+    if (event.target instanceof HTMLInputElement) {
+      return;
+    }
+    const key = event.key;
+    if (key >= '1' && key <= '6') {
+      this.selection.selectZone((Number(key) - 1) as ZoneId);
+      event.preventDefault();
+      return;
+    }
+    if (key === 'Escape') {
+      this.selection.clear();
+      event.preventDefault();
+      return;
+    }
+    if (event.shiftKey && key >= '0' && key <= '9') {
+      const fenceId = Number(key);
+      const zoneId = Math.floor(fenceId / 2) as ZoneId;
+      this.selection.selectFence(fenceId, zoneId);
+      event.preventDefault();
+    }
   }
 
   readonly cpuUsage = computed(() => {

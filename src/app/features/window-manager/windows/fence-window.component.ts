@@ -1,16 +1,18 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { ZONE_NAMES } from '../../../../simulation/constants';
+import type { ZoneId } from '../../../../simulation';
 import { FenceStatusService } from '../../../core/services/fence-status.service';
 import { UiTelemetryService } from '../../../core/services/ui-telemetry.service';
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
 import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
-import { GameActionControlsComponent } from '../../../shared/game-actions/game-action-controls.component';
+import { WindowActionControlsComponent } from '../../../shared/window-actions/window-action-controls.component';
+import { UiSelectionService } from '../../../core/services/ui-selection.service';
 
 @Component({
   selector: 'app-fence-window',
   standalone: true,
-  imports: [OsIconComponent, RetroScrollDirective, GameActionControlsComponent],
+  imports: [OsIconComponent, RetroScrollDirective, WindowActionControlsComponent],
   template: `
     <div class="win-panel" data-app="fence" jpRetroScroll>
       <p>
@@ -19,9 +21,9 @@ import { GameActionControlsComponent } from '../../../shared/game-actions/game-a
         <span [class]="gridStatusClass()">{{ fenceStatus.gridLabel() }}</span>
       </p>
       <p class="jp-info fence-window__hint">
-        Segment ID matches park schematic (F0–F11). Zone column = containment sector.
+        Click a row to target F0–F11. Use window actions below (not grid tactical shortcuts).
       </p>
-      <table class="jp-table fence-window__table">
+      <table class="jp-table fence-window__table jp-table--selectable">
         <thead>
           <tr>
             <th>FENCE</th>
@@ -35,7 +37,16 @@ import { GameActionControlsComponent } from '../../../shared/game-actions/game-a
         </thead>
         <tbody>
           @for (row of rows(); track row.id) {
-            <tr [attr.data-fence-id]="row.id" [attr.data-state]="row.state">
+            <tr
+              [attr.data-fence-id]="row.id"
+              [attr.data-state]="row.state"
+              class="jp-table__row"
+              [class.jp-table__row--selected]="selection.fenceId() === row.id"
+              role="button"
+              tabindex="0"
+              (click)="selectRow(row.id, row.zoneId)"
+              (keydown.enter)="selectRow(row.id, row.zoneId)"
+            >
               <td class="fence-window__id">F{{ row.id }}</td>
               <td [title]="row.zoneName">Z{{ row.zoneId }} {{ row.zoneCode }}</td>
               <td>{{ row.segment }}</td>
@@ -47,7 +58,7 @@ import { GameActionControlsComponent } from '../../../shared/game-actions/game-a
           }
         </tbody>
       </table>
-      <app-game-action-controls context="fence" />
+      <app-window-action-controls context="fence" />
     </div>
   `,
   styles: `
@@ -65,6 +76,7 @@ export class FenceWindowComponent {
   private readonly sim = inject(SimulationBridgeService);
   readonly fenceStatus = inject(FenceStatusService);
   readonly telemetry = inject(UiTelemetryService);
+  readonly selection = inject(UiSelectionService);
 
   private readonly zoneCodes = ['HN', 'HS', 'PE', 'PW', 'RS', 'VS'] as const;
 
@@ -80,6 +92,10 @@ export class FenceWindowComponent {
       segment: f.id % 2 === 0 ? 'A' : 'B',
     }));
   });
+
+  selectRow(fenceId: number, zoneId: ZoneId): void {
+    this.selection.selectFence(fenceId, zoneId);
+  }
 
   gridStatusClass(): string {
     return this.fenceStatus.isCritical() ? 'jp-critical' : 'jp-nominal';

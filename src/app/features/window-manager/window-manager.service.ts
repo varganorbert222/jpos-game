@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { JpMailService } from '../../core/services/jp-mail.service';
+import { OperatorGuidanceService } from '../../core/services/operator-guidance.service';
 import { SystemBootService } from '../../core/services/system-boot.service';
 import type { DockApp } from '../panels/dock/dock.component';
 
@@ -41,6 +42,7 @@ const WINDOW_SIZES: Record<DockApp, { width: number; height: number }> = {
 export class WindowManagerService {
   private readonly boot = inject(SystemBootService);
   private readonly mail = inject(JpMailService);
+  private readonly guidance = inject(OperatorGuidanceService);
 
   readonly windows = signal<OsWindow[]>([]);
   readonly focusedId = signal<string | null>(null);
@@ -123,6 +125,9 @@ export class WindowManagerService {
     this.boot.beginWindowLoad(win.id);
     if (app === 'mail') {
       this.mail.clearNewMailIndicator();
+    }
+    if (app === 'terminal') {
+      this.guidance.onTerminalOpened();
     }
   }
 

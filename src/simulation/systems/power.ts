@@ -1,3 +1,4 @@
+import { getParamNumber } from '../gameplay-config';
 import type { SimulationState } from '../types';
 import { SeededRng } from '../rng';
 
@@ -10,7 +11,10 @@ export function updatePowerGrid(state: SimulationState, rng: SeededRng): void {
       continue;
     }
 
-    gen.fuel = Math.max(0, gen.fuel - gen.load * 0.02);
+    const burn = getParamNumber('generatorFuelBurnFactor');
+    const fuelMax = getParamNumber('generatorFuelMax');
+    gen.fuel = Math.max(0, gen.fuel - gen.load * burn);
+    gen.fuel = Math.min(fuelMax, gen.fuel);
 
     if (gen.load > 80) {
       gen.temperature = Math.min(100, gen.temperature + 2);

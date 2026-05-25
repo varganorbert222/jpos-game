@@ -12,7 +12,7 @@ interface ScoredSuggestion extends NextCommandSuggestion {
 /** Non-prescriptive command hints from current park conditions (not optimal play). */
 export function getNextCommandSuggestions(
   state: SimulationState,
-  max = 3,
+  max = 2,
 ): NextCommandSuggestion[] {
   const candidates: ScoredSuggestion[] = [];
 

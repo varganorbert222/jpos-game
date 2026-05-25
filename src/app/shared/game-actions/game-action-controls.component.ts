@@ -5,97 +5,27 @@ import {
   input,
 } from '@angular/core';
 import { SimulationBridgeService } from '../../core/services/simulation-bridge.service';
-import { HardRebootConfirmService } from '../../core/services/hard-reboot-confirm.service';
-import { buildHardRebootPrompt } from '../../core/utils/hard-reboot-prompt';
+import { UiSelectionService } from '../../core/services/ui-selection.service';
 
-export type GameActionContext = 'power' | 'security' | 'grid' | 'dino' | 'fence';
-
+/** Tactical shortcuts on the park grid only — not duplicated in OS windows. */
 @Component({
   selector: 'app-game-action-controls',
   standalone: true,
   host: { class: 'game-action-controls' },
   template: `
-    <div class="game-action-controls__bar" [attr.data-context]="context()">
-      @switch (context()) {
-        @case ('power') {
-          <button type="button" class="jp-btn" (click)="act('increase_voltage', { id: 0 })">
-            +VOLT F0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('decrease_voltage', { id: 0 })">
-            -VOLT F0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('power_reroute', { zone: 0 })">
-            REROUTE Z0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('generator_restart', { id: 0 })">
-            GEN0 RESTART
-          </button>
-          <button type="button" class="jp-btn jp-warn" (click)="act('emergency_venting')">
-            EMERG VENT
-          </button>
-        }
-        @case ('security') {
-          <button type="button" class="jp-btn" (click)="act('cam_reboot', { id: 0 })">
-            CAM0 REBOOT
-          </button>
-          <button type="button" class="jp-btn" (click)="act('reset_fence', { id: 0 })">
-            RESET F0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('increase_voltage', { id: 0 })">
-            +VOLT F0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('cam_reboot', { id: 2 })">
-            CAM2 REBOOT
-          </button>
-        }
-        @case ('grid') {
-          <button type="button" class="jp-btn" (click)="act('dispatch_patrol', { zone: 0 })">
-            PATROL Z0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('dispatch_patrol', { zone: 2 })">
-            PATROL Z2
-          </button>
-          <button type="button" class="jp-btn" (click)="act('reset_fence', { id: 0 })">
-            RESET F0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('seal_breach', { id: 0 })">
-            SEAL F0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('increase_voltage', { id: 0 })">
-            +VOLT F0
-          </button>
-        }
-        @case ('dino') {
-          <button type="button" class="jp-btn" (click)="act('dino_sedate', { id: 0 })">
-            SEDATE D0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('dispatch_patrol', { zone: 0 })">
-            PATROL Z0
-          </button>
-          <button type="button" class="jp-btn jp-warn" (click)="act('lethal_authorization')">
-            LETHAL AUTH
-          </button>
-        }
-        @case ('fence') {
-          <button type="button" class="jp-btn" (click)="act('increase_voltage', { id: 0 })">
-            +VOLT F0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('decrease_voltage', { id: 0 })">
-            -VOLT F0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('reset_fence', { id: 0 })">
-            RESET F0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('seal_breach', { id: 0 })">
-            SEAL F0
-          </button>
-          <button type="button" class="jp-btn" (click)="act('dispatch_patrol', { zone: 0 })">
-            PATROL Z0
-          </button>
-        }
-      }
-      <button type="button" class="jp-btn jp-critical" (click)="requestHardReboot()">
-        HARD REBOOT
+    <div class="game-action-controls__bar" data-context="grid-tactical">
+      <span class="game-action-controls__label">TACTICAL</span>
+      <button type="button" class="jp-btn" (click)="act('dispatch_patrol', 'zone')">
+        PATROL Z
+      </button>
+      <button type="button" class="jp-btn" (click)="act('seal_breach', 'id')">
+        QUICK SEAL
+      </button>
+      <button type="button" class="jp-btn" (click)="act('reset_fence', 'id')">
+        RESET SEG
+      </button>
+      <button type="button" class="jp-btn" (click)="act('increase_voltage', 'id')">
+        BOOST VOLT
       </button>
     </div>
   `,
@@ -103,10 +33,17 @@ export type GameActionContext = 'power' | 'security' | 'grid' | 'dino' | 'fence'
     .game-action-controls__bar {
       display: flex;
       flex-wrap: wrap;
+      align-items: center;
       gap: 0.35rem;
       margin-top: 0.5rem;
       padding-top: 0.35rem;
       border-top: 1px solid var(--jp-border-dim, #2a4a2a);
+    }
+    .game-action-controls__label {
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: var(--jp-irix-text-dim);
+      margin-right: 0.25rem;
     }
     .game-action-controls__bar .jp-btn {
       font-size: 0.7rem;
@@ -116,20 +53,32 @@ export type GameActionContext = 'power' | 'security' | 'grid' | 'dino' | 'fence'
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameActionControlsComponent {
-  readonly context = input.required<GameActionContext>();
+  /** Kept for template compatibility — only grid uses this component. */
+  readonly context = input<'grid'>('grid');
 
   private readonly sim = inject(SimulationBridgeService);
-  private readonly hardReboot = inject(HardRebootConfirmService);
+  private readonly selection = inject(UiSelectionService);
 
-  act(type: string, params?: Record<string, string | number>): void {
+  act(type: string, paramKind: 'id' | 'zone'): void {
+    const params = this.buildParams(paramKind);
+    if (!params) {
+      return;
+    }
     this.sim.queueAction(type, params);
   }
 
-  requestHardReboot(): void {
-    const snap = this.sim.snapshot();
-    if (!snap) {
-      return;
+  private buildParams(paramKind: 'id' | 'zone'): Record<string, number> | null {
+    const sel = this.selection.selection();
+    if (!sel) {
+      return null;
     }
-    this.hardReboot.request(buildHardRebootPrompt(snap));
+    if (paramKind === 'zone') {
+      return { zone: sel.zoneId };
+    }
+    if (sel.fenceId != null) {
+      return { id: sel.fenceId };
+    }
+    const fence = this.sim.snapshot()?.fences.find((f) => f.zoneId === sel.zoneId);
+    return fence ? { id: fence.id } : null;
   }
 }

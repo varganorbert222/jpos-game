@@ -74,6 +74,11 @@ export const TERMINAL_COMMAND_DEFS: readonly TerminalCommandDef[] = [
     summary: `Restart generator (ID ${idRange(GENERATOR_COUNT)})`,
   },
   {
+    name: 'refuel_generator',
+    usage: 'refuel_generator [ID]',
+    summary: `Transfer depot fuel to generator (ID ${idRange(GENERATOR_COUNT)})`,
+  },
+  {
     name: 'cam_reboot',
     usage: 'cam_reboot [ID]',
     summary: `Queue camera reboot (ID ${idRange(CAMERA_COUNT)})`,
@@ -103,6 +108,7 @@ export const TERMINAL_QUEUE_ACTIONS: Record<string, 'id' | 'zone' | null> = {
   increase_voltage: 'id',
   decrease_voltage: 'id',
   generator_restart: 'id',
+  refuel_generator: 'id',
   cam_reboot: 'id',
   power_reroute: 'zone',
   dispatch_patrol: 'zone',

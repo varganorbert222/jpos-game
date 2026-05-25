@@ -1,0 +1,134 @@
+<section class="jp-panel incident-feed-panel" data-region="incidents">
+  <div class="left-column__half left-column__feed">
+    <h2 class="jp-panel__title feed-title">
+      <span class="feed-title__label">
+        <app-os-icon name="terminal" /> OPERATIONS FEED
+      </span>
+      <span class="feed-title__tools">
+        @if (pendingHint(); as hint) {
+          <span class="feed-title__pending jp-warn">{{ hint }}</span>
+        }
+        <button type="button" class="jp-btn feed-title__btn" (click)="toggleFilters()">
+          FILTER
+        </button>
+        <button type="button" class="jp-btn feed-title__btn" (click)="clearCurrentTab()">
+          CLEAR
+        </button>
+      </span>
+    </h2>
+
+    <div class="feed-tabs">
+      <button
+        type="button"
+        class="jp-btn feed-tabs__btn"
+        [class.feed-tabs__btn--active]="feed.feedTab() === 'active'"
+        (click)="setTab('active')"
+      >
+        ACTIVE ({{ feed.filteredActive().length }})
+      </button>
+      <button
+        type="button"
+        class="jp-btn feed-tabs__btn"
+        [class.feed-tabs__btn--active]="feed.feedTab() === 'archived'"
+        (click)="setTab('archived')"
+      >
+        ARCHIVED ({{ feed.filteredArchived().length }})
+      </button>
+    </div>
+
+    @if (showFilterPanel()) {
+      <div class="feed-filters">
+        <button
+          type="button"
+          class="jp-btn feed-filters__chip"
+          [class.feed-filters__chip--on]="feed.showAllTypes()"
+          (click)="clearFilters()"
+        >
+          ALL TYPES
+        </button>
+        @for (t of filterTypes; track t) {
+          <button
+            type="button"
+            class="jp-btn feed-filters__chip"
+            [class.feed-filters__chip--on]="feed.isFilterSelected(t)"
+            [attr.data-filter]="t"
+            (click)="onFilterClick(t)"
+          >
+            {{ t }}
+          </button>
+        }
+      </div>
+    }
+
+    <app-jp-section-loader sectionId="incident_feed" class="incident-feed-loader">
+      @if (feed.isEmptyView()) {
+        <p class="feed-empty">
+          @if (feed.feedTab() === 'active' && feed.pendingCount() > 0) {
+            Awaiting queued messages…
+          } @else {
+            No events to display.
+          }
+        </p>
+      } @else {
+        <ul class="incidents" jpRetroScroll>
+          @for (item of listItems(); track item.key) {
+            <li
+              class="incident-row"
+              [class]="rowToneClass(item)"
+              [class.incident-row--static]="!isInteractive(item)"
+              [class.incident-row--archived]="feed.feedTab() === 'archived'"
+              [attr.data-filter]="item.filterType"
+              [attr.role]="isInteractive(item) ? 'button' : null"
+              [attr.tabindex]="isInteractive(item) ? 0 : null"
+              (click)="onIncidentClick(item)"
+              (keydown.enter)="onIncidentClick(item)"
+            >
+              <div class="incident-row__head">
+                <span class="incident-row__time">{{ item.timeLabel }}</span>
+              </div>
+              <p class="incident-row__msg">{{ item.message }}</p>
+              @if (showOpenPath(item)) {
+                <div class="incident-row__actions">
+                  @if (needsTerminal(item)) {
+                    <span class="incident-row__term-hint">TERMINAL required</span>
+                  }
+                  <button
+                    type="button"
+                    class="jp-btn incident-row__open-btn"
+                    (click)="onOpenClick(item, $event)"
+                  >
+                    OPEN {{ recommendedApp(item) }}
+                  </button>
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </app-jp-section-loader>
+  </div>
+
+  <div class="left-column__half left-column__actions">
+    <h2 class="jp-panel__title feed-title feed-title--action">
+      <span class="feed-title__label">
+        <app-os-icon name="module" /> ACTION FEED
+      </span>
+    </h2>
+    <ul class="action-feed" jpRetroScroll>
+      @for (row of actionFeed(); track row.key) {
+        <li
+          class="action-feed__row"
+          [class]="actionRowToneClass(row.phase)"
+        >
+          <div class="action-feed__head">
+            <span class="action-feed__time">{{ row.timeLabel }}</span>
+            <span class="action-feed__phase">{{ row.phaseLabel }}</span>
+          </div>
+          <p class="action-feed__msg">&gt; {{ row.command }}</p>
+        </li>
+      } @empty {
+        <li class="action-feed__empty">No actions queued or in flight.</li>
+      }
+    </ul>
+  </div>
+</section>

@@ -67,11 +67,131 @@
       "min": 5,
       "max": 40
     },
+    "generatorFuelBurnFactor": {
+      "v": 0.008,
+      "hu": "Online generátor üzemanyag-fogyás tickenként: load * factor.",
+      "min": 0.002,
+      "max": 0.05
+    },
+    "refuelTransferAmount": {
+      "v": 35,
+      "hu": "Egy refuel_generator parancs ennyi üzemanyagot visz a depóból a generátorba.",
+      "min": 10,
+      "max": 60
+    },
+    "generatorFuelMax": {
+      "v": 100,
+      "hu": "Generátor tank plafon.",
+      "min": 50,
+      "max": 150
+    },
     "lethalStabilityPenalty": {
       "v": 20,
       "hu": "Lethal protokoll után egyszeri stability csökkenés.",
       "min": 5,
       "max": 50
+    },
+    "stabilityBlackoutDrain": {
+      "v": 1.2,
+      "hu": "Tickenkénti stability csökkenés aktív globális blackout alatt.",
+      "min": 0.2,
+      "max": 4
+    },
+    "stabilityActiveBreachDrain": {
+      "v": 0.4,
+      "hu": "Tickenkénti stability csökkenés minden aktív (jelenlegi) kerítésszakadás után.",
+      "min": 0.1,
+      "max": 2
+    },
+    "stabilityStormDrain": {
+      "v": 0.3,
+      "hu": "Tickenkénti stability csökkenés vihar időjárás alatt.",
+      "min": 0,
+      "max": 2
+    },
+    "stabilityQuietRecovery": {
+      "v": 0.4,
+      "hu": "Tickenkénti stability növekedés, ha nincs blackout és nincs aktív breach.",
+      "min": 0,
+      "max": 2
+    },
+    "stabilityFenceStableBonus": {
+      "v": 0.2,
+      "hu": "Tick bónusz: stabil kerítések aránya × ez az érték.",
+      "min": 0,
+      "max": 1
+    },
+    "stabilityPowerHealthyBonus": {
+      "v": 0.12,
+      "hu": "Tick bónusz, ha minden generátor online és nincs blackout.",
+      "min": 0,
+      "max": 1
+    },
+    "stabilityHealthPull": {
+      "v": 0.06,
+      "hu": "Stabilitás lassú húzása a park tényleges állapota felé (javítás után visszatölt).",
+      "min": 0,
+      "max": 0.2
+    },
+    "stabilityResolveRewardMinor": {
+      "v": 1,
+      "hu": "Stability növekedés minor incidens feloldásakor.",
+      "min": 0,
+      "max": 8
+    },
+    "stabilityResolveRewardMajor": {
+      "v": 2,
+      "hu": "Stability növekedés major incidens feloldásakor.",
+      "min": 0,
+      "max": 10
+    },
+    "stabilityResolveRewardCritical": {
+      "v": 3,
+      "hu": "Stability növekedés critical incidens feloldásakor.",
+      "min": 0,
+      "max": 12
+    },
+    "stabilityResolveBonusFenceBreach": {
+      "v": 2,
+      "hu": "Extra stability fence breach incidens feloldásakor.",
+      "min": 0,
+      "max": 8
+    },
+    "stabilityResolveBonusDinoEscape": {
+      "v": 1.5,
+      "hu": "Extra stability dinosaur escape incidens feloldásakor.",
+      "min": 0,
+      "max": 8
+    },
+    "stabilityRewardFenceMaintenance": {
+      "v": 1,
+      "hu": "Stability bónusz sikeres fence reset után (stresszált szegmens).",
+      "min": 0,
+      "max": 5
+    },
+    "stabilityRewardRefuel": {
+      "v": 0.75,
+      "hu": "Stability bónusz sikeres generátor tankolás után.",
+      "min": 0,
+      "max": 5
+    },
+    "stabilityRewardGeneratorRestart": {
+      "v": 1.25,
+      "hu": "Stability bónusz sikeres generátor újraindítás után.",
+      "min": 0,
+      "max": 5
+    },
+    "stabilityRewardSealBreach": {
+      "v": 2.5,
+      "hu": "Stability bónusz field-op seal_breach befejezésekor (incidens jutalom mellett).",
+      "min": 0,
+      "max": 8
+    },
+    "stabilityRewardPatrolComplete": {
+      "v": 1,
+      "hu": "Stability bónusz field-op patrol befejezésekor.",
+      "min": 0,
+      "max": 5
     },
     "tourBonusQuietTicks": {
       "v": 30,
@@ -96,6 +216,162 @@
       "hu": "Training: két lépés között ennyi tickig fut a szim (queued parancs lefutása után), mielőtt a következő lépés befagyaszt.",
       "min": 1,
       "max": 30
+    },
+    "dinoAgitatedStressThreshold": {
+      "v": 72,
+      "hu": "Roaming → Agitated: minimum stressz (magasabb = ritkább felizgulás).",
+      "min": 50,
+      "max": 90
+    },
+    "dinoFenceTestAggressionMin": {
+      "v": 78,
+      "hu": "Agitated → FenceTesting: minimum nyers aggression.",
+      "min": 60,
+      "max": 95
+    },
+    "dinoFenceTestStressMin": {
+      "v": 68,
+      "hu": "FenceTesting indítás: minimum stressz.",
+      "min": 50,
+      "max": 90
+    },
+    "dinoFenceTestAgitatedTicksMin": {
+      "v": 14,
+      "hu": "Ennyi tick Agitated állapot után lehet első kerítéspróba.",
+      "min": 4,
+      "max": 40
+    },
+    "dinoFenceTestChancePerTick": {
+      "v": 0.06,
+      "hu": "Feltételek teljesülése mellett tickenkénti esély FenceTesting-re.",
+      "min": 0.01,
+      "max": 0.25
+    },
+    "dinoFenceTestMaxTicks": {
+      "v": 18,
+      "hu": "Max FenceTesting hossz tickben — utána vissza Roaming + cooldown.",
+      "min": 6,
+      "max": 40
+    },
+    "dinoFenceTestCooldownTicks": {
+      "v": 55,
+      "hu": "Kerítéspróba után ennyi tickig nem kezd újat ugyanaz a dino.",
+      "min": 10,
+      "max": 120
+    },
+    "dinoHuntingStressMin": {
+      "v": 90,
+      "hu": "FenceTesting → Hunting: minimum stressz (ritka, extrém).",
+      "min": 75,
+      "max": 100
+    },
+    "dinoHuntingChancePerTick": {
+      "v": 0.035,
+      "hu": "FenceTesting alatt tickenkénti esély Hunting-re (chaos mellett).",
+      "min": 0,
+      "max": 0.15
+    },
+    "dinoRoamingIntervalTicks": {
+      "v": 22,
+      "hu": "Idle → Roaming ellenőrzés ennyi tickenként.",
+      "min": 8,
+      "max": 40
+    },
+    "dinoRoamingChance": {
+      "v": 0.1,
+      "hu": "Idle állapotban Roaming-re váltás esélye (ellenőrzéskor).",
+      "min": 0.02,
+      "max": 0.4
+    },
+    "dinoStressDecayPerTick": {
+      "v": 0.65,
+      "hu": "Stressz csökkenés Idle/Roaming/FenceTesting alatt tickenként.",
+      "min": 0.1,
+      "max": 2
+    },
+    "dinoStressGainAgitated": {
+      "v": 0.35,
+      "hu": "Stressz növekedés Agitated/Hunting alatt tickenként.",
+      "min": 0,
+      "max": 2
+    },
+    "dinoAggressionDecayPerTick": {
+      "v": 0.15,
+      "hu": "Aggression lassú csökkenés, ha nem Agitated/Hunting.",
+      "min": 0,
+      "max": 1
+    },
+    "fenceIntegrityDecayIntervalTicks": {
+      "v": 18,
+      "hu": "Ennyi tickenként egyszeri integrity kopás (0 = kikapcsolva).",
+      "min": 0,
+      "max": 40
+    },
+    "fenceIntegrityDecayAmount": {
+      "v": 0.5,
+      "hu": "Integrity kopás értéke decay tickkor.",
+      "min": 0,
+      "max": 3
+    },
+    "fenceStressFenceTesting": {
+      "v": 2,
+      "hu": "Tick stressz a célzott kerítésen FenceTesting alatt.",
+      "min": 0,
+      "max": 8
+    },
+    "fenceStressHighAggression": {
+      "v": 1,
+      "hu": "Tick stressz, ha a zónában van magas aggression dino (nem feltétlenül tesztel).",
+      "min": 0,
+      "max": 5
+    },
+    "fenceHighAggressionThreshold": {
+      "v": 82,
+      "hu": "Aggression küszöb a passzív kerítés stresszhez.",
+      "min": 70,
+      "max": 95
+    },
+    "fenceStormStressPerTick": {
+      "v": 2,
+      "hu": "Vihar tick stressz kerítésre.",
+      "min": 0,
+      "max": 6
+    },
+    "eventStressIncreaseMinor": {
+      "v": 4,
+      "hu": "dinosaur stress increase minor incidens stressz bump.",
+      "min": 1,
+      "max": 15
+    },
+    "eventStressIncreaseCritical": {
+      "v": 8,
+      "hu": "dinosaur stress increase critical fázis stressz bump.",
+      "min": 2,
+      "max": 20
+    },
+    "eventFenceStressMajor": {
+      "v": 12,
+      "hu": "high fence stress major/critical hatás (stressz, nem azonnali breach).",
+      "min": 4,
+      "max": 30
+    },
+    "eventFenceBreachStressBump": {
+      "v": 22,
+      "hu": "RNG fence breach critical: stressz bump (csak küszöb felett lesz tényleges breach).",
+      "min": 8,
+      "max": 40
+    },
+    "staffCameraAggressionIntervalTicks": {
+      "v": 4,
+      "hu": "Ennyi tickenként +aggression, ha a kamerák többsége offline.",
+      "min": 1,
+      "max": 10
+    },
+    "staffCameraAggressionBump": {
+      "v": 0.4,
+      "hu": "Aggression növekedés offline kamera mellett (interval tickenként).",
+      "min": 0,
+      "max": 2
     }
   },
   "difficulties": {

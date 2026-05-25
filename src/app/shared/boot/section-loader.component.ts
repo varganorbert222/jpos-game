@@ -12,7 +12,7 @@ import { RetroSpinnerComponent } from './retro-spinner.component';
     <div class="jp-section-loader">
       @if (!ready()) {
         <div class="jp-section-loader__overlay">
-          <app-retro-spinner />
+          <app-retro-spinner [size]="28" />
           <p class="jp-section-loader__msg">{{ message() }}</p>
         </div>
       }
@@ -24,21 +24,18 @@ import { RetroSpinnerComponent } from './retro-spinner.component';
       </div>
     </div>
   `,
-  styles: [
-    `
-      :host {
-        display: block;
-        min-height: 0;
-      }
-      :host(.park-grid-loader),
-      :host(.camera-feeds-loader),
-      :host(.alerts-loader),
-      :host(.events-loader) {
-        display: flex;
-        flex-direction: column;
-      }
-    `,
-  ],
+  styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      align-self: stretch;
+      width: 100%;
+      min-width: 0;
+      min-height: 0;
+      height: 100%;
+    }
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SectionLoaderComponent {

@@ -53,8 +53,8 @@ function buildFences(): Fence[] {
 function buildGenerators(): Generator[] {
   return Array.from({ length: GENERATOR_COUNT }, (_, id) => ({
     id,
-    fuel: 80,
-    load: 55 + id * 8,
+    fuel: 100,
+    load: 45 + id * 6,
     temperature: 45 + id * 5,
     online: true,
   }));
@@ -64,7 +64,7 @@ function buildCameras(): Camera[] {
   const cameras: Camera[] = [];
   let id = 0;
   for (let z = 0; z < ZONE_COUNT; z++) {
-    const count = z < 4 ? 2 : 1;
+    const count = 3;
     for (let c = 0; c < count; c++) {
       cameras.push({
         id: id++,
@@ -85,19 +85,29 @@ function buildDinosaurs(): Dinosaur[] {
   for (let z = 0; z < ZONE_COUNT; z++) {
     for (let d = 0; d < perZone[z]; d++) {
       const seed = id * 17 + z * 3;
+      const species = SPECIES[seed % SPECIES.length];
+      const placid = species === 'Brachio' || species === 'Trike';
+      const probe = species === 'Raptor' || species === 'Dilo' || species === 'Spino';
+      const aggression = placid
+        ? 18 + (seed % 18)
+        : probe
+          ? 28 + (seed % 22)
+          : 22 + (seed % 20);
+      const stress = placid ? 10 + (seed % 15) : 14 + (seed % 18);
       dinosaurs.push({
         id: id++,
         zoneId: z as ZoneId,
-        species: SPECIES[seed % SPECIES.length],
+        species,
         aiState: 'Idle',
-        stress: 20 + (seed % 30),
-        visibleAggression: 25 + (seed % 20),
+        stress,
+        visibleAggression: Math.round(aggression * 0.55 + stress * 0.35),
         intelligence: 30 + (seed % 50),
-        aggression: 35 + (seed % 40),
-        escalationTendency: 20 + (seed % 30),
-        patternRecognition: 10 + (seed % 25),
+        aggression,
+        escalationTendency: placid ? 12 + (seed % 15) : probe ? 22 + (seed % 22) : 16 + (seed % 18),
+        patternRecognition: placid ? 6 + (seed % 12) : 10 + (seed % 22),
         ticksInState: 0,
         targetFenceId: null,
+        fenceTestCooldownTicks: 0,
       });
     }
   }
@@ -111,13 +121,13 @@ function baseEventProbs(difficulty: DifficultyMode): {
 } {
   switch (difficulty) {
     case 'easy':
-      return { minor: 0.06, major: 0.02, critical: 0.004 };
+      return { minor: 0.055, major: 0.018, critical: 0.0025 };
     case 'veteran':
-      return { minor: 0.12, major: 0.04, critical: 0.01 };
+      return { minor: 0.1, major: 0.035, critical: 0.006 };
     case 'tutorial':
       return { minor: 0.02, major: 0.005, critical: 0 };
     default:
-      return { minor: 0.08, major: 0.03, critical: 0.008 };
+      return { minor: 0.07, major: 0.025, critical: 0.004 };
   }
 }
 
@@ -168,7 +178,7 @@ export function createInitialState(
     recoveryQuietTicksLeft: 0,
     helicopter: { zoneId: 5, enabled: true, busyTicks: 0 },
     resources: {
-      fuel: 100,
+      fuel: 180,
       tranquilizerAmmo: 12,
       spareParts: 8,
       medicalSupplies: 10,

@@ -3,11 +3,14 @@ import { UiTelemetryService } from '../../../core/services/ui-telemetry.service'
 import { JpStatusIconComponent, type JpStatusKind } from '../../../shared/jp-status-icon/jp-status-icon.component';
 import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
 import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
-import { GameActionControlsComponent } from '../../../shared/game-actions/game-action-controls.component';
+import { WindowActionControlsComponent } from '../../../shared/window-actions/window-action-controls.component';
+import { UiSelectionService } from '../../../core/services/ui-selection.service';
+import type { ZoneId } from '../../../../simulation';
+
 @Component({
   selector: 'app-security-window',
   standalone: true,
-  imports: [JpStatusIconComponent, RetroScrollDirective, GameActionControlsComponent],
+  imports: [JpStatusIconComponent, RetroScrollDirective, WindowActionControlsComponent],
   template: `
     <div class="win-panel" data-app="security" jpRetroScroll>
       <p>
@@ -18,7 +21,10 @@ import { GameActionControlsComponent } from '../../../shared/game-actions/game-a
       <p [class]="blackout() ? 'jp-critical' : 'jp-nominal'">
         GRID: {{ blackout() ? 'BLACKOUT' : 'NOMINAL' }}
       </p>
-      <table class="jp-table">
+      <p class="jp-info security-window__hint">
+        Click a camera row to target CAM ID for window actions.
+      </p>
+      <table class="jp-table jp-table--selectable">
         <thead>
           <tr>
             <th></th>
@@ -29,7 +35,16 @@ import { GameActionControlsComponent } from '../../../shared/game-actions/game-a
         </thead>
         <tbody>
           @for (c of cameras(); track c.id) {
-            <tr [attr.data-camera-id]="c.id" [attr.data-state]="c.state">
+            <tr
+              [attr.data-camera-id]="c.id"
+              [attr.data-state]="c.state"
+              class="jp-table__row"
+              [class.jp-table__row--selected]="selection.cameraId() === c.id"
+              role="button"
+              tabindex="0"
+              (click)="selectCamera(c.id, c.zoneId)"
+              (keydown.enter)="selectCamera(c.id, c.zoneId)"
+            >
               <td><app-jp-status-icon [kind]="camStatus(c.state)" /></td>
               <td>{{ c.id }}</td>
               <td>{{ c.zoneId }}</td>
@@ -38,14 +53,21 @@ import { GameActionControlsComponent } from '../../../shared/game-actions/game-a
           }
         </tbody>
       </table>
-      <app-game-action-controls context="security" />
+      <app-window-action-controls context="security" />
     </div>
+  `,
+  styles: `
+    .security-window__hint {
+      margin: 0 0 0.5rem;
+      font-size: 0.72rem;
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SecurityWindowComponent {
   private readonly sim = inject(SimulationBridgeService);
   readonly telemetry = inject(UiTelemetryService);
+  readonly selection = inject(UiSelectionService);
 
   readonly cameras = computed(() => this.sim.snapshot()?.cameras ?? []);
   readonly totalCams = computed(() => this.cameras().length);
@@ -57,6 +79,10 @@ export class SecurityWindowComponent {
     this.telemetry.formatMetric(this.onlineCams(), 7, ''),
   );
   readonly blackout = computed(() => this.sim.snapshot()?.globalBlackout ?? false);
+
+  selectCamera(cameraId: number, zoneId: number): void {
+    this.selection.selectCamera(cameraId, zoneId as ZoneId);
+  }
 
   onlineClass(): string {
     return this.blackout() ? 'jp-corrupt' : 'jp-nominal';

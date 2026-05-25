@@ -1,12 +1,13 @@
 import { ESCALATION_PHASES, EVENT_PROB_CAPS, ESCALATION_INTERVAL_MS } from '../constants';
 import { getDifficultyConfig, shiftWinElapsedMs } from '../gameplay-config';
 import type { EscalationPhaseId, SimulationState } from '../types';
+import { updateStabilityTick } from './stability';
 
 export function propagateConsequences(state: SimulationState): void {
   updateEscalationPhase(state);
   updateShiftObjective(state);
   updateCooldowns(state);
-  updateStability(state);
+  updateStabilityTick(state);
   updateTelemetry(state);
   updateRebootOutage(state);
   checkLossConditions(state);
@@ -67,27 +68,6 @@ function updateEscalationPhase(state: SimulationState): void {
     );
     state.lastEscalationBumpMs = state.elapsedRealtimeMs;
   }
-}
-
-function updateStability(state: SimulationState): void {
-  let delta = 0;
-  if (state.globalBlackout) {
-    delta -= 2;
-  }
-  if (state.breachCount > 0) {
-    delta -= state.breachCount * 0.5;
-  }
-  if (state.activeEvents.filter((e) => e.severity === 'critical').length >= 3) {
-    delta -= 1;
-    state.telemetryCorruption = Math.min(100, state.telemetryCorruption + 5);
-  }
-  if (state.weather === 'Storm') {
-    delta -= 0.5;
-  }
-  if (state.stability > 60) {
-    delta += 0.2;
-  }
-  state.stability = Math.max(0, Math.min(100, state.stability + delta));
 }
 
 function updateTelemetry(state: SimulationState): void {

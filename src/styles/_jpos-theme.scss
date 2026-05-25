@@ -92,6 +92,27 @@
   border-bottom: 2px solid var(--jp-irix-bevel-light);
 }
 
+/** Panel, section, and dock window title bars — one IRIX chrome. */
+@mixin jp-chrome-title {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  margin: 0;
+  padding: 8px 10px;
+  flex-shrink: 0;
+  background: var(--jp-irix-title);
+  color: var(--jp-irix-text);
+  font-family: var(--jp-font-ui);
+  font-size: var(--jp-font-sm);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-style: solid;
+  border-width: 0 0 2px 0;
+  border-color: var(--jp-irix-bevel-dark);
+  box-shadow: inset 0 1px 0 var(--jp-irix-bevel-light);
+}
+
 .jp-terminal-cursor {
   display: inline-block;
   width: 12px;
@@ -240,16 +261,11 @@
   left: 0;
   right: 0;
   height: var(--jp-title-h);
-  display: flex;
-  align-items: center;
   justify-content: space-between;
   padding: 0 8px;
-  background: var(--jp-irix-title);
-  border-bottom: 2px solid var(--jp-irix-bevel-dark);
-  color: var(--jp-irix-text);
-  font-family: var(--jp-font-ui);
-  font-size: var(--jp-font-sm);
-  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0.06em;
+  @include jp-chrome-title;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -262,6 +278,8 @@
 .jp-os-window__body {
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
   padding: 10px 12px;
   overflow: hidden;
   background: var(--jp-irix-window);
@@ -277,23 +295,49 @@
 }
 
 .jp-os-window__body > app-jp-section-loader {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   height: 100%;
   min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  align-self: stretch;
+}
+
+.jp-os-window__body .jp-section-loader,
+.jp-os-window__body .jp-section-loader__content:not(.jp-section-loader__content--hidden) {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
-.jp-os-window__body app-jp-section-loader .jp-section-loader {
-  height: 100%;
+.jp-os-window__body .jp-section-loader__content > * {
+  flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
 }
 
 .jp-os-window__body .win-panel,
-.jp-os-window__body .jp-terminal {
-  height: 100%;
-  max-height: 100%;
+.jp-os-window__body .jp-terminal,
+.jp-os-window__body .jp-mail-win,
+.jp-os-window__body .jp-files-win,
+.jp-os-window__body .jp-tour-win {
+  flex: 1 1 auto;
   min-height: 0;
+  max-height: 100%;
   box-sizing: border-box;
+}
+
+/** Scroll hosts inside OS windows — bounded height so jpRetroScroll can scroll. */
+.jp-os-window__body .jp-retro-scroll,
+.jp-os-window__body .jp-retro-scroll-auto {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
 }
 
 .jp-os-window__body .jp-terminal {
@@ -331,25 +375,14 @@
   line-height: var(--jp-line);
 }
 
-.jp-panel__title {
-  display: flex;
-  align-items: center;
-  gap: 0.35em;
-  margin: 0;
-  padding: 8px 10px;
-  background: var(--jp-irix-title);
-  border-bottom: 2px solid var(--jp-irix-bevel-dark);
-  color: var(--jp-irix-text);
-  font-family: var(--jp-font-ui);
-  font-size: var(--jp-font-sm);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.jp-panel__title,
+.jp-panel__title--sub,
+h2.jp-panel__title,
+h3.jp-panel__title {
+  @include jp-chrome-title;
 }
 
 .jp-panel__title--sub {
-  border-bottom: none;
-  border-top: 2px solid var(--jp-irix-bevel-dark);
   margin-top: 0;
 }
 
@@ -560,6 +593,19 @@
 .jp-table td.jp-corrupt,
 .jp-table .jp-corrupt {
   color: var(--jp-term-corrupt);
+}
+
+.jp-table--selectable .jp-table__row {
+  cursor: pointer;
+}
+
+.jp-table--selectable .jp-table__row:hover {
+  background: var(--jp-irix-title);
+}
+
+.jp-table__row--selected {
+  outline: 2px solid var(--jp-term-cursor);
+  background: var(--jp-irix-title-active);
 }
 
 @import "./boot";

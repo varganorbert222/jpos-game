@@ -1,12 +1,59 @@
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/** Nincs külső jp-panel — csak a center-blockok látszanak önálló panelként. */
 .center-panel {
   height: 100%;
   display: flex;
   flex-direction: column;
   padding: 0;
   min-height: 0;
+  overflow: hidden;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
-.park-grid-head__title {
+.center-block {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--jp-irix-window);
+  color: var(--jp-irix-text);
+  font-family: var(--jp-font);
+  font-size: var(--jp-font-base);
+  font-weight: 700;
+  line-height: var(--jp-line);
+  border-top: 2px solid var(--jp-irix-bevel-light);
+  border-left: 2px solid var(--jp-irix-bevel-light);
+  border-right: 2px solid var(--jp-irix-bevel-dark);
+  border-bottom: 2px solid var(--jp-irix-bevel-dark);
+}
+
+.center-block--park {
+  flex: 1 1 0;
+  overflow: hidden;
+}
+
+.center-block--cameras {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+}
+
+.center-block--park .park-grid-head__title,
+.center-block--cameras .jp-panel__title--sub {
+  flex: 0 0 auto;
+}
+
+.park-grid-head__title.jp-panel__title {
   justify-content: space-between;
   gap: 8px;
 }
@@ -19,20 +66,26 @@
 }
 
 .park-grid-loader {
-  flex: 1 1 auto;
-  min-height: 260px;
-  margin: 8px;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .park-grid-loader app-zone-map-canvas {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+  display: block;
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .camera-feeds-loader {
   flex: 0 0 auto;
-  min-height: 220px;
-  margin: 0 8px 8px;
+  flex-shrink: 0;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }

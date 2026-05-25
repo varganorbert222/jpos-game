@@ -1,17 +1,22 @@
-<section class="jp-panel center-panel" data-region="center">
-  <h2 class="jp-panel__title park-grid-head__title">
-    <span class="park-grid-head__label">
-      <app-os-icon name="module" /> ISLA NUBLAR — PARK GRID
-    </span>
-    <app-park-grid-fence-status />
-  </h2>
-  <app-jp-section-loader sectionId="park_grid" class="park-grid-loader">
-    <app-zone-map-canvas />
-    <app-game-action-controls context="grid" />
-  </app-jp-section-loader>
+<section class="center-panel" data-region="center">
+  <div class="center-block center-block--park">
+    <h2 class="jp-panel__title park-grid-head__title">
+      <span class="park-grid-head__label">
+        <app-os-icon name="module" /> ISLA NUBLAR — PARK GRID
+      </span>
+      <app-park-grid-fence-status />
+    </h2>
+    <app-jp-section-loader sectionId="park_grid" class="park-grid-loader">
+      <app-zone-map-canvas />
+    </app-jp-section-loader>
+  </div>
 
-  <h2 class="jp-panel__title jp-panel__title--sub"><app-os-icon name="sensor" /> CAMERA FEEDS</h2>
-  <app-jp-section-loader sectionId="camera_feeds" class="camera-feeds-loader">
-    <app-camera-feeds />
-  </app-jp-section-loader>
+  <div class="center-block center-block--cameras">
+    <h2 class="jp-panel__title jp-panel__title--sub">
+      <app-os-icon name="sensor" /> CAMERA FEEDS
+    </h2>
+    <app-jp-section-loader sectionId="camera_feeds" class="camera-feeds-loader">
+      <app-camera-feeds />
+    </app-jp-section-loader>
+  </div>
 </section>

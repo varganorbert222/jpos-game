@@ -2,7 +2,7 @@
 export const ZONE_COUNT = 6;
 export const FENCE_COUNT = 12;
 export const GENERATOR_COUNT = 3;
-export const CAMERA_COUNT = 9;
+export const CAMERA_COUNT = 18;
 export const MAINTENANCE_TEAM_COUNT = 2;
 export const DINOSAUR_COUNT = 18;
 export const MAX_SIMULTANEOUS_EVENTS = 8;

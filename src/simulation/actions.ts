@@ -1,5 +1,6 @@
 import { getActionNumber, getParamNumber } from './gameplay-config';
 import { resolveIncidentCategory } from './systems/events';
+import { applyStabilityDelta } from './systems/stability';
 import { notifyTutorialProgress, resumeTutorialTicks } from './systems/tutorial-script';
 import {
   dispatchPatrol,
@@ -28,6 +29,7 @@ const COOLDOWNS: Record<string, number> = {
   seal_breach: 5,
   dino_sedate: 6,
   generator_restart: 5,
+  refuel_generator: 3,
   cam_reboot: 2,
   power_reroute: 3,
   emergency_venting: 8,
@@ -145,6 +147,7 @@ function executeAction(state: SimulationState, action: QueuedPlayerAction): void
       const id = Number(action.params['id'] ?? 0);
       const fence = state.fences[id];
       if (fence) {
+        const wasStressed = fence.stress >= 45 || fence.integrity < 60;
         fence.integrity = Math.min(100, fence.integrity + 25);
         fence.stress = Math.max(0, fence.stress - 15);
         if (fence.state !== 'Breached') {
@@ -152,6 +155,9 @@ function executeAction(state: SimulationState, action: QueuedPlayerAction): void
         }
         resolveIncidentCategory(state, 'high fence stress', id);
         resolveIncidentCategory(state, 'fence voltage drop', id);
+        if (wasStressed) {
+          applyStabilityDelta(state, getParamNumber('stabilityRewardFenceMaintenance'));
+        }
       }
       break;
     }
@@ -205,7 +211,34 @@ function executeAction(state: SimulationState, action: QueuedPlayerAction): void
         gen.online = true;
         gen.temperature = 50;
         state.resources.spareParts--;
+        applyStabilityDelta(state, getParamNumber('stabilityRewardGeneratorRestart'));
       }
+      break;
+    }
+    case 'refuel_generator': {
+      const id = Number(action.params['id'] ?? 0);
+      const gen = state.generators[id];
+      if (!gen) {
+        break;
+      }
+      const fuelMax = getParamNumber('generatorFuelMax');
+      const transferCap = getParamNumber('refuelTransferAmount');
+      if (state.resources.fuel <= 0) {
+        state.logEntries.push(`[PWR] Depot fuel empty — cannot refuel GEN${id}.`);
+        break;
+      }
+      const headroom = fuelMax - gen.fuel;
+      const transfer = Math.min(transferCap, state.resources.fuel, headroom);
+      if (transfer <= 0) {
+        state.logEntries.push(`[PWR] Generator ${id} tank already full.`);
+        break;
+      }
+      state.resources.fuel -= transfer;
+      gen.fuel += transfer;
+      applyStabilityDelta(state, getParamNumber('stabilityRewardRefuel'));
+      state.logEntries.push(
+        `[PWR] Generator ${id} refueled +${Math.round(transfer)} (depot ${Math.round(state.resources.fuel)} remaining).`,
+      );
       break;
     }
     case 'cam_reboot': {
@@ -383,7 +416,7 @@ export function parseTerminalCommand(
       }
       switch (paramKey) {
         case 'id':
-          if (parts[0] === 'generator_restart') {
+          if (parts[0] === 'generator_restart' || parts[0] === 'refuel_generator') {
             return queueWithGeneratorId(state, parts[0], parts[1]);
           }
           if (parts[0] === 'cam_reboot') {

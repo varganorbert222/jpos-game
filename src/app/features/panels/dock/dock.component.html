@@ -1,5 +1,16 @@
 <nav class="dock" data-region="dock">
-  @for (a of apps; track a.id) {
+  @if (pageCount() > 1) {
+    <button
+      type="button"
+      class="jp-btn dock-page-btn"
+      (click)="prevPage()"
+      [disabled]="!canPagePrev()"
+      aria-label="Previous dock page"
+    >
+      ‹
+    </button>
+  }
+  @for (a of visibleApps(); track a.id) {
     <button
       type="button"
       class="jp-btn jp-dock-btn"
@@ -8,6 +19,7 @@
       [attr.data-open]="isOpen(a.id)"
       [attr.data-minimized]="isMinimized(a.id)"
       [attr.data-focused]="isFocused(a.id)"
+      [class.jp-dock-btn--highlight]="guidance.highlightDockApp() === a.id"
       [attr.title]="dockTitle(a.id)"
       (click)="open(a.id)"
     >
@@ -27,6 +39,17 @@
           >■</span
         >
       }
+    </button>
+  }
+  @if (pageCount() > 1) {
+    <button
+      type="button"
+      class="jp-btn dock-page-btn"
+      (click)="nextPage()"
+      [disabled]="!canPageNext()"
+      aria-label="Next dock page"
+    >
+      ›
     </button>
   }
 </nav>

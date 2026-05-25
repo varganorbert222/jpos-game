@@ -1,8 +1,7 @@
 import type { DockApp } from '../../features/panels/dock/dock.component';
 
 export type BootSectionId =
-  | 'security_alerts'
-  | 'active_events'
+  | 'incident_feed'
   | 'park_grid'
   | 'camera_feeds'
   | 'next_command'
@@ -19,8 +18,7 @@ export type BootSectionId =
 export type BootSectionState = 'pending' | 'loading' | 'ready';
 
 export const PANEL_BOOT_SEQUENCE: readonly BootSectionId[] = [
-  'security_alerts',
-  'active_events',
+  'incident_feed',
   'park_grid',
   'camera_feeds',
   'next_command',
@@ -34,8 +32,7 @@ export function windowBootSection(app: DockApp): BootSectionId {
 }
 
 export const BOOT_SECTION_MESSAGES: Record<BootSectionId, string> = {
-  security_alerts: 'INITIALIZING SECURITY ALERT BUS...',
-  active_events: 'LOADING EVENT DISPATCH QUEUE...',
+  incident_feed: 'INITIALIZING OPERATIONS FEED...',
   park_grid: 'CALIBRATING PARK GRID MAP...',
   camera_feeds: 'SYNCHRONIZING CAMERA MATRIX...',
   next_command: 'STARTING COMMAND ADVISORY MODULE...',

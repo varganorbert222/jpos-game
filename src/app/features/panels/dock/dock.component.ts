@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { OsIconComponent } from '../../../shared/os-icon/os-icon.component';
 import { JpMailService } from '../../../core/services/jp-mail.service';
 import { WindowManagerService } from '../../window-manager/window-manager.service';
+import { OperatorGuidanceService } from '../../../core/services/operator-guidance.service';
 
 export type DockApp =
   | 'security'
@@ -14,6 +15,8 @@ export type DockApp =
   | 'mail'
   | 'tours';
 
+const APPS_PER_PAGE = 9;
+
 @Component({
   selector: 'app-dock',
   standalone: true,
@@ -25,6 +28,9 @@ export type DockApp =
 export class DockComponent {
   readonly wm = inject(WindowManagerService);
   readonly mail = inject(JpMailService);
+  readonly guidance = inject(OperatorGuidanceService);
+  readonly dockPage = signal(0);
+
   readonly apps: { id: DockApp; label: string }[] = [
     { id: 'security', label: 'SECURITY' },
     { id: 'power', label: 'POWER GRID' },
@@ -37,8 +43,32 @@ export class DockComponent {
     { id: 'tours', label: 'TOURS' },
   ];
 
+  readonly pageCount = computed(() =>
+    Math.max(1, Math.ceil(this.apps.length / APPS_PER_PAGE)),
+  );
+
+  readonly visibleApps = computed(() => {
+    const start = this.dockPage() * APPS_PER_PAGE;
+    return this.apps.slice(start, start + APPS_PER_PAGE);
+  });
+
+  readonly canPagePrev = computed(() => this.dockPage() > 0);
+  readonly canPageNext = computed(() => this.dockPage() < this.pageCount() - 1);
+
   open(app: DockApp): void {
     this.wm.open(app);
+  }
+
+  prevPage(): void {
+    if (this.canPagePrev()) {
+      this.dockPage.update((p) => p - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.canPageNext()) {
+      this.dockPage.update((p) => p + 1);
+    }
   }
 
   isOpen(app: DockApp): boolean {

@@ -58,6 +58,8 @@ export interface Dinosaur {
   patternRecognition: number;
   ticksInState: number;
   targetFenceId: number | null;
+  /** FenceTesting után — meddig nem kezd új kerítéspróbát. */
+  fenceTestCooldownTicks: number;
 }
 
 export interface MaintenanceTeam {

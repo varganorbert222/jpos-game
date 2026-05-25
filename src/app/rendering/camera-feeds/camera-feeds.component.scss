@@ -25,6 +25,7 @@
 }
 
 .feed {
+  cursor: pointer;
   border-top: 2px solid var(--jp-irix-bevel-light);
   border-left: 2px solid var(--jp-irix-bevel-light);
   border-right: 2px solid var(--jp-irix-bevel-dark);
@@ -97,6 +98,11 @@
   font-size: var(--jp-font-sm);
   color: var(--jp-irix-text);
   background: var(--jp-irix-title);
+}
+
+.feed--selected {
+  outline: 2px solid var(--jp-term-cursor);
+  outline-offset: 1px;
 }
 
 .feed[data-state="Offline"] .feed__state {

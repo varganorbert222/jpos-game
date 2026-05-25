@@ -1,5 +1,6 @@
-import { getActionNumber } from '../gameplay-config';
+import { getActionNumber, getParamNumber } from '../gameplay-config';
 import type { FieldOperation, SimulationState, ZoneId } from '../types';
+import { applyStabilityDelta, onIncidentResolved } from './stability';
 
 export function updateFieldOps(state: SimulationState): void {
   updateHeliSedate(state);
@@ -54,6 +55,7 @@ function applyFieldOpEffect(state: SimulationState, op: FieldOperation): void {
         state.logEntries.push(`[FNC] Fence ${fence.id} sealed.`);
       }
       resolveIncidents(state, 'fence breach', fence?.id);
+      applyStabilityDelta(state, getParamNumber('stabilityRewardSealBreach'));
       break;
     }
     case 'patrol': {
@@ -67,6 +69,7 @@ function applyFieldOpEffect(state: SimulationState, op: FieldOperation): void {
         f.stress = Math.max(0, f.stress - 8);
       }
       state.logEntries.push(`[STF] Patrol complete — Z${op.targetZoneId}.`);
+      applyStabilityDelta(state, getParamNumber('stabilityRewardPatrolComplete'));
       break;
     }
     case 'generator_restart': {
@@ -75,6 +78,7 @@ function applyFieldOpEffect(state: SimulationState, op: FieldOperation): void {
         gen.online = true;
         gen.temperature = 50;
         state.resources.spareParts--;
+        applyStabilityDelta(state, getParamNumber('stabilityRewardGeneratorRestart'));
         state.logEntries.push(`[PWR] Generator ${gen.id} online.`);
       }
       break;
@@ -100,6 +104,7 @@ function resolveIncidents(
       continue;
     }
     e.resolved = true;
+    onIncidentResolved(state, e);
     state.alertEntries.push(`RESOLVED: ${e.message}`);
   }
 }

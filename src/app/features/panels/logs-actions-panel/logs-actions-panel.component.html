@@ -1,36 +1,39 @@
-<section class="jp-panel logs-panel" [class]="telemetry.jitterClass()">
-  <h2 class="jp-panel__title"><app-os-icon name="terminal" /> SYSTEM LOG</h2>
-  <ul class="logs jp-info" jpRetroScroll>
-    @for (l of logs(); track $index) {
-      <li>{{ l }}</li>
-    }
-  </ul>
+<section class="jp-panel logs-panel" data-region="logs-actions">
+  <h2 class="jp-panel__title">
+    <app-os-icon name="terminal" /> NEXT COMMAND
+  </h2>
+  <app-jp-section-loader sectionId="next_command" class="logs-panel__next-body">
+    <p class="logs-panel__next-warn jp-warn">
+      Advisory: suggestions may worsen conditions.
+    </p>
+    <ul class="logs-panel__next-list">
+      @for (s of nextSuggestions(); track s.usage) {
+        <li>
+          <span class="logs-panel__next-cmd">{{ s.usage }}</span>
+          <span class="logs-panel__next-note">— {{ s.note }}</span>
+        </li>
+      }
+    </ul>
+  </app-jp-section-loader>
+
   <h2 class="jp-panel__title jp-panel__title--sub">OPERATOR ACTIONS</h2>
-  <div class="actions">
-    <button type="button" class="jp-btn" (click)="runAction('reset_fence', { id: 0 })">RESET FENCE 0</button>
-    <button type="button" class="jp-btn" (click)="runAction('increase_voltage', { id: 0 })">+VOLT F0</button>
-    <button type="button" class="jp-btn" (click)="runAction('dispatch_patrol')">PATROL</button>
-    <button type="button" class="jp-btn" (click)="runAction('generator_restart', { id: 0 })">GEN RESTART</button>
-    <button type="button" class="jp-btn jp-warn" (click)="runAction('emergency_venting')">EMERG VENT</button>
-    <button type="button" class="jp-btn jp-critical" (click)="runAction('system_hard_reboot')">HARD REBOOT</button>
+  <div class="actions-wrap">
+    <div class="actions actions--matrix">
+      @for (a of operatorActions; track a.type) {
+        <button
+          type="button"
+          class="jp-btn"
+          [class.jp-warn]="a.warn"
+          [class.jp-critical]="a.critical"
+          [disabled]="isActionBlocked(a)"
+          (click)="runAction(a)"
+        >
+          {{ a.label }}
+        </button>
+      }
+    </div>
   </div>
+
   <h2 class="jp-panel__title jp-panel__title--sub">COMMAND LINE</h2>
-  <div class="term-line jp-terminal-prompt--underline" jpTerminalPrompt>
-    <span class="jp-terminal-prompt__prefix term-line__chev">&gt;</span>
-    <input
-      #termInput
-      class="jp-terminal-prompt__input term-input"
-      placeholder="help"
-      autocomplete="off"
-      spellcheck="false"
-      (keydown)="onTerminalKeydown($event, termInput)"
-      (keydown.enter)="onTerminalSubmit(termInput)"
-    />
-  </div>
-  <pre
-    class="term-out jp-terminal-viewport"
-    [class.jp-corrupt]="corruptOutput()"
-    jpRetroScroll
-    jpTerminalAutoscroll
-  >{{ terminalOut() }}</pre>
+  <app-compact-terminal class="logs-panel__terminal" />
 </section>

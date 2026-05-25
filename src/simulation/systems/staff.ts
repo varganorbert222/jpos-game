@@ -1,3 +1,4 @@
+import { getParamNumber } from '../gameplay-config';
 import type { SimulationState } from '../types';
 import { SeededRng } from '../rng';
 
@@ -23,9 +24,15 @@ export function updateStaff(state: SimulationState, rng: SeededRng): void {
 
   const camerasOffline =
     state.cameras.filter((c) => c.state === 'Offline').length / state.cameras.length;
-  if (camerasOffline > 0.5) {
+  const camInterval = getParamNumber('staffCameraAggressionIntervalTicks');
+  if (
+    camerasOffline > 0.5 &&
+    camInterval > 0 &&
+    state.tick % camInterval === 0
+  ) {
+    const bump = getParamNumber('staffCameraAggressionBump');
     for (const dino of state.dinosaurs) {
-      dino.aggression = Math.min(100, dino.aggression + 1);
+      dino.aggression = Math.min(100, dino.aggression + bump);
     }
   }
 }

@@ -2,6 +2,7 @@ import { MAX_SIMULTANEOUS_EVENTS } from '../constants';
 import { getDifficultyConfig, getParamNumber } from '../gameplay-config';
 import type { EventSeverity, GameEvent, IncidentPhase, SimulationState, ZoneId } from '../types';
 import { SeededRng } from '../rng';
+import { onIncidentResolved } from './stability';
 
 const MINOR_EVENTS = [
   'camera offline',
@@ -15,11 +16,8 @@ const MAJOR_EVENTS = [
   'approaching storm',
 ] as const;
 
-const CRITICAL_EVENTS = [
-  'fence breach',
-  'dinosaur escape',
-  'total blackout',
-] as const;
+/** fence breach: organikus (kerítés stressz), nem RNG critical — fenntarthatóbb üzem. */
+const CRITICAL_EVENTS = ['dinosaur escape', 'total blackout'] as const;
 
 const SOFTWARE_CATEGORIES = new Set(['mail payload', 'sensor ghost']);
 
@@ -268,7 +266,7 @@ function applyWarnEffects(state: SimulationState, event: GameEvent): void {
       if (event.targetDinoId != null) {
         state.dinosaurs[event.targetDinoId].stress = Math.min(
           100,
-          state.dinosaurs[event.targetDinoId].stress + 6,
+          state.dinosaurs[event.targetDinoId].stress + getParamNumber('eventStressIncreaseMinor'),
         );
       }
       break;
@@ -304,7 +302,7 @@ function applyCriticalEffects(state: SimulationState, event: GameEvent): void {
     case 'dinosaur stress increase':
       if (event.targetDinoId != null) {
         const d = state.dinosaurs[event.targetDinoId];
-        d.stress = Math.min(100, d.stress + 12);
+        d.stress = Math.min(100, d.stress + getParamNumber('eventStressIncreaseCritical'));
       }
       break;
     case 'generator overheating': {
@@ -316,7 +314,7 @@ function applyCriticalEffects(state: SimulationState, event: GameEvent): void {
       if (event.targetFenceId != null) {
         state.fences[event.targetFenceId].stress = Math.min(
           100,
-          state.fences[event.targetFenceId].stress + 20,
+          state.fences[event.targetFenceId].stress + getParamNumber('eventFenceStressMajor'),
         );
       }
       break;
@@ -326,12 +324,15 @@ function applyCriticalEffects(state: SimulationState, event: GameEvent): void {
     case 'fence breach':
       if (event.targetFenceId != null) {
         const fence = state.fences[event.targetFenceId];
+        fence.stress = Math.min(
+          100,
+          fence.stress + getParamNumber('eventFenceBreachStressBump'),
+        );
         if (state.difficultyMode === 'tutorial' && !state.tutorialScriptComplete) {
-          fence.stress = Math.min(95, fence.stress + 12);
           if (fence.state !== 'Breached') {
-            fence.state = 'Sparking';
+            fence.state = fence.stress >= 85 ? 'Sparking' : 'Unstable';
           }
-        } else {
+        } else if (fence.stress >= 100 && fence.state !== 'Breached') {
           fence.state = 'Breached';
           state.breachCount++;
         }
@@ -448,6 +449,7 @@ export function resolveIncidentCategory(
       continue;
     }
     e.resolved = true;
+    onIncidentResolved(state, e);
     state.alertEntries.push(`RESOLVED: ${e.category}`);
   }
 }

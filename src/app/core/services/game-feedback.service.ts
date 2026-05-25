@@ -5,13 +5,29 @@ import { FenceStatusService } from './fence-status.service';
 import { JpMailService } from './jp-mail.service';
 import { SimulationBridgeService } from './simulation-bridge.service';
 import { SystemBootService } from './system-boot.service';
+import {
+  incidentNeedsVerify,
+  parseIncidentTargets,
+  verifyChecklistSteps,
+} from '../utils/incident-target.util';
+import {
+  FEED_SEED_MAX_ITEMS,
+  badgeToFilterType,
+} from '../constants/operations-feed.config';
+import {
+  OperationsFeedService,
+  type FeedItemInput,
+  type OperationsFeedItem,
+} from './operations-feed.service';
+
+export type { OperationsFeedItem as IncidentDisplayItem } from './operations-feed.service';
 
 const MAX_DISPLAYED_ALERTS = 12;
-const REVEAL_GAP_MS = 220;
 
 type FeedbackKind =
   | 'alert'
   | 'event'
+  | 'log'
   | 'status_bar'
   | 'fence_status'
   | 'mail';
@@ -20,11 +36,13 @@ interface FeedbackItem {
   kind: FeedbackKind;
   alertText?: string;
   event?: GameEvent;
+  logText?: string;
+  occurredAtMs: number;
 }
 
 /**
- * Queues UI reveals and matching sounds so alerts/events do not stack
- * simultaneously. Status bar, fence, and mail cues are audio-only.
+ * Detects simulation deltas and routes them to OperationsFeedService
+ * (priority queue reveal, archive, filters handled there).
  */
 @Injectable({ providedIn: 'root' })
 export class GameFeedbackService {
@@ -33,6 +51,7 @@ export class GameFeedbackService {
   private readonly fence = inject(FenceStatusService);
   private readonly mail = inject(JpMailService);
   private readonly audio = inject(AudioService);
+  readonly feed = inject(OperationsFeedService);
 
   private readonly queue: FeedbackItem[] = [];
   private draining = false;
@@ -40,15 +59,16 @@ export class GameFeedbackService {
   private desktopSeeded = false;
   private seenEventIds = new Set<number>();
   private lastAlertCount = 0;
+  private lastLogCount = 0;
   private lastBanner = '';
   private lastFenceLabel = '';
   private lastMailCount = 0;
 
-  /** Alerts released one-by-one for the security panel. */
   readonly displayedAlerts = signal<string[]>([]);
-
-  /** Active events released one-by-one for the events list. */
   readonly displayedEvents = signal<GameEvent[]>([]);
+
+  /** @deprecated Use feed.filteredActive — kept for minimal churn */
+  readonly displayedIncidents = this.feed.activeFeed;
 
   constructor() {
     effect(() => {
@@ -83,7 +103,7 @@ export class GameFeedbackService {
         return;
       }
       this.lastBanner = banner;
-      this.enqueue({ kind: 'status_bar' });
+      this.enqueue({ kind: 'status_bar', occurredAtMs: this.nowMs() });
     });
 
     effect(() => {
@@ -99,7 +119,7 @@ export class GameFeedbackService {
         return;
       }
       this.lastFenceLabel = label;
-      this.enqueue({ kind: 'fence_status' });
+      this.enqueue({ kind: 'fence_status', occurredAtMs: this.nowMs() });
     });
 
     effect(() => {
@@ -116,7 +136,7 @@ export class GameFeedbackService {
         return;
       }
       this.lastMailCount = count;
-      this.enqueue({ kind: 'mail' });
+      this.enqueue({ kind: 'mail', occurredAtMs: this.nowMs() });
     });
   }
 
@@ -128,39 +148,75 @@ export class GameFeedbackService {
     });
   }
 
+  markVerifyStep(key: string, stepId: string): void {
+    this.feed.markVerifyStep(key, stepId);
+  }
+
+  private nowMs(): number {
+    return this.sim.snapshot()?.elapsedRealtimeMs ?? 0;
+  }
+
   private seedDesktop(snap: SimulationSnapshot): void {
     this.desktopSeeded = true;
     this.seenEventIds = new Set(snap.activeEvents.map((e) => e.id));
     this.lastAlertCount = snap.alertEntries.length;
+    this.lastLogCount = snap.logEntries.length;
     this.lastBanner = this.boot.sysBannerDisplay();
     this.lastFenceLabel = this.fence.gridLabel();
     this.lastMailCount = this.mail.messages().length;
     this.displayedAlerts.set([...snap.alertEntries].slice(-MAX_DISPLAYED_ALERTS).reverse());
     this.displayedEvents.set([...snap.activeEvents]);
+
+    const at = snap.elapsedRealtimeMs;
+    const batch: FeedItemInput[] = [];
+    for (const text of snap.logEntries.slice(-FEED_SEED_MAX_ITEMS)) {
+      batch.push(this.logToItem(text, `seed-l-${batch.length}`, at));
+    }
+    for (const text of snap.alertEntries.slice(-MAX_DISPLAYED_ALERTS)) {
+      batch.push(this.alertToItem(text, `seed-a-${batch.length}`, at));
+    }
+    for (const event of snap.activeEvents) {
+      batch.push(this.eventToItem(event, at));
+    }
+    batch.sort((a, b) => a.occurredAtMs - b.occurredAtMs);
+    this.feed.enqueueMany(batch.slice(-FEED_SEED_MAX_ITEMS));
   }
 
   private resetPresentation(): void {
     this.desktopSeeded = false;
     this.seenEventIds.clear();
     this.lastAlertCount = 0;
+    this.lastLogCount = 0;
     this.lastBanner = '';
     this.lastFenceLabel = '';
     this.lastMailCount = 0;
     this.queue.length = 0;
     this.displayedAlerts.set([]);
     this.displayedEvents.set([]);
+    this.feed.reset();
   }
 
   private detectSnapshotDeltas(snap: SimulationSnapshot): void {
+    const at = snap.elapsedRealtimeMs;
+
     const alerts = snap.alertEntries;
     if (alerts.length > this.lastAlertCount) {
-      const fresh = alerts.slice(this.lastAlertCount);
-      this.lastAlertCount = alerts.length;
-      for (const alertText of fresh) {
-        this.enqueue({ kind: 'alert', alertText });
+      for (const alertText of alerts.slice(this.lastAlertCount)) {
+        this.enqueue({ kind: 'alert', alertText, occurredAtMs: at });
       }
+      this.lastAlertCount = alerts.length;
     } else if (alerts.length < this.lastAlertCount) {
       this.lastAlertCount = alerts.length;
+    }
+
+    const logs = snap.logEntries;
+    if (logs.length > this.lastLogCount) {
+      for (const logText of logs.slice(this.lastLogCount)) {
+        this.enqueue({ kind: 'log', logText, occurredAtMs: at });
+      }
+      this.lastLogCount = logs.length;
+    } else if (logs.length < this.lastLogCount) {
+      this.lastLogCount = logs.length;
     }
 
     for (const event of snap.activeEvents) {
@@ -168,7 +224,7 @@ export class GameFeedbackService {
         continue;
       }
       this.seenEventIds.add(event.id);
-      this.enqueue({ kind: 'event', event: { ...event } });
+      this.enqueue({ kind: 'event', event: { ...event }, occurredAtMs: at });
     }
   }
 
@@ -178,6 +234,7 @@ export class GameFeedbackService {
     for (const id of [...this.seenEventIds]) {
       if (!activeIds.has(id)) {
         this.seenEventIds.delete(id);
+        this.feed.removeEventItems(id);
       }
     }
   }
@@ -195,9 +252,6 @@ export class GameFeedbackService {
     while (this.queue.length > 0) {
       const item = this.queue.shift()!;
       this.applyItem(item);
-      if (this.queue.length > 0) {
-        await this.delay(REVEAL_GAP_MS);
-      }
     }
     this.draining = false;
   }
@@ -209,8 +263,26 @@ export class GameFeedbackService {
           this.displayedAlerts.update((prev) =>
             [item.alertText!, ...prev].slice(0, MAX_DISPLAYED_ALERTS),
           );
+          this.feed.enqueue(
+            this.alertToItem(
+              item.alertText,
+              `a-${item.occurredAtMs}-${Math.random()}`,
+              item.occurredAtMs,
+            ),
+          );
+          this.audio.enqueue('alert');
         }
-        this.audio.enqueue('alert');
+        break;
+      case 'log':
+        if (item.logText) {
+          this.feed.enqueue(
+            this.logToItem(
+              item.logText,
+              `l-${item.occurredAtMs}-${this.lastLogCount}`,
+              item.occurredAtMs,
+            ),
+          );
+        }
         break;
       case 'event':
         if (item.event) {
@@ -220,8 +292,9 @@ export class GameFeedbackService {
             }
             return [...prev, item.event!];
           });
+          this.feed.enqueue(this.eventToItem(item.event, item.occurredAtMs));
+          this.audio.enqueue('event');
         }
-        this.audio.enqueue('event');
         break;
       case 'status_bar':
         this.audio.enqueue('status_bar');
@@ -235,7 +308,127 @@ export class GameFeedbackService {
     }
   }
 
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  private alertToItem(
+    text: string,
+    key: string,
+    occurredAtMs: number,
+  ): FeedItemInput {
+    const targets = parseIncidentTargets(text);
+    const needsVerify = incidentNeedsVerify(text);
+    const badge = needsVerify ? 'GHOST' : 'ALERT';
+    return this.buildItem({
+      key,
+      kind: 'alert',
+      badge,
+      message: text,
+      severity: this.alertSeverity(text),
+      occurredAtMs,
+      zoneId: targets.zoneId,
+      fenceId: targets.fenceId,
+      needsVerify,
+      verifySteps: needsVerify ? verifyChecklistSteps(text, targets) : [],
+    });
+  }
+
+  private eventToItem(event: GameEvent, occurredAtMs: number): FeedItemInput {
+    const targets = parseIncidentTargets(event.message);
+    const needsVerify = incidentNeedsVerify(event.message);
+    return this.buildItem({
+      key: `ev-${event.id}`,
+      kind: 'event',
+      badge: event.severity.toUpperCase(),
+      message: event.message,
+      severity:
+        event.severity === 'critical'
+          ? 'critical'
+          : event.severity === 'major'
+            ? 'major'
+            : 'minor',
+      occurredAtMs,
+      zoneId: targets.zoneId ?? event.targetZoneId,
+      fenceId: targets.fenceId ?? event.targetFenceId,
+      needsVerify,
+      verifySteps: needsVerify ? verifyChecklistSteps(event.message, targets) : [],
+    });
+  }
+
+  private logToItem(
+    text: string,
+    key: string,
+    occurredAtMs: number,
+  ): FeedItemInput {
+    const targets = parseIncidentTargets(text);
+    const needsVerify = incidentNeedsVerify(text);
+    const badge = this.logBadge(text);
+    return this.buildItem({
+      key,
+      kind: 'log',
+      badge,
+      message: text,
+      severity: this.logSeverity(text, badge),
+      occurredAtMs,
+      zoneId: targets.zoneId,
+      fenceId: targets.fenceId,
+      needsVerify,
+      verifySteps: needsVerify ? verifyChecklistSteps(text, targets) : [],
+    });
+  }
+
+  private buildItem(
+    partial: Omit<FeedItemInput, 'verifyDone'> & {
+      verifySteps: { id: string; label: string }[];
+    },
+  ): FeedItemInput {
+    return {
+      ...partial,
+      verifyDone: new Set(),
+    };
+  }
+
+  private alertSeverity(text: string): OperationsFeedItem['severity'] {
+    const u = text.toUpperCase();
+    if (u.includes('CRITICAL') || u.includes('BREACH') || u.includes('BLACKOUT')) {
+      return 'critical';
+    }
+    if (u.includes('WARN') || u.includes('GHOST')) {
+      return 'major';
+    }
+    return 'info';
+  }
+
+  private logBadge(text: string): string {
+    const u = text.toUpperCase();
+    if (u.includes('[TRAINING]') || u.startsWith('TRAINING')) {
+      return 'TRAINING';
+    }
+    if (u.includes('[EVENT]')) {
+      return 'EVENT';
+    }
+    if (u.includes('[WARN]')) {
+      return 'WARN';
+    }
+    if (u.includes('[CRITICAL]') || u.includes('BREACH')) {
+      return 'CRITICAL';
+    }
+    if (u.startsWith('OK:') || u.startsWith('>')) {
+      return 'CMD';
+    }
+    return 'LOG';
+  }
+
+  private logSeverity(
+    text: string,
+    badge: string,
+  ): OperationsFeedItem['severity'] {
+    if (badge === 'CRITICAL') {
+      return 'critical';
+    }
+    if (badge === 'WARN' || badge === 'EVENT') {
+      return 'major';
+    }
+    if (badge === 'TRAINING') {
+      return 'info';
+    }
+    return this.alertSeverity(text);
   }
 }

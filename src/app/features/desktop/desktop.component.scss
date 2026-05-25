@@ -14,7 +14,7 @@
 
 .sys-banner {
   display: grid;
-  grid-template-columns: auto auto 1fr 200px 150px auto auto;
+  grid-template-columns: auto auto 1fr 200px 150px auto auto auto;
   align-items: center;
   height: var(--jp-menu-h);
   padding: 0 12px;
@@ -125,6 +125,11 @@
   pointer-events: none;
 }
 
+.desktop--crisis .workspace {
+  outline: 2px solid var(--jp-term-critical);
+  outline-offset: -2px;
+}
+
 .layout > * {
   pointer-events: auto;
 }
@@ -132,6 +137,26 @@
 .col {
   min-height: 0;
   overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.col--left,
+.col--right {
+  min-width: 0;
+}
+
+.col-panel {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sys-banner__reboot {
+  padding: 4px 10px;
+  font-size: var(--jp-font-sm);
+  white-space: nowrap;
 }
 
 .status-bar {

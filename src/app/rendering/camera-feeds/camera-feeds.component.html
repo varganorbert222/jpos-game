@@ -2,10 +2,15 @@
   @for (f of pageFeeds(); track f.id) {
     <article
       class="feed"
+      [class.feed--selected]="selection.cameraId() === f.id"
       [attr.data-camera-id]="f.id"
       [attr.data-zone-id]="f.zoneId"
       [attr.data-state]="f.state"
       [attr.data-overlay]="f.overlay"
+      role="button"
+      tabindex="0"
+      (click)="selectFeed(f)"
+      (keydown.enter)="selectFeed(f)"
     >
       <header class="feed__head">
         <app-jp-status-icon [kind]="f.statusKind" />
@@ -40,7 +45,7 @@
     ‹ Prev
   </button>
   <span class="feeds-controls__label"
-    >Page {{ page() + 1 }} / {{ pageCount() }}</span
+    >{{ feedModeLabel() }} · {{ page() + 1 }}/{{ pageCount() }}</span
   >
   <button
     class="jp-btn"

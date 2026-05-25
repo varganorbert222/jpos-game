@@ -1,13 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { CLI_HELP_LINES } from '../../../core/constants/cli-commands';
-import { SimulationBridgeService } from '../../../core/services/simulation-bridge.service';
-import { SystemBootService } from '../../../core/services/system-boot.service';
-import { TerminalCommandHistory } from '../../../shared/terminal/terminal-command-history';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RetroScrollDirective } from '../../../shared/retro-scroll/retro-scroll.directive';
 import { TerminalAutoscrollDirective } from '../../../shared/terminal/terminal-autoscroll.directive';
 import { TerminalPromptDirective } from '../../../shared/terminal/terminal-prompt.directive';
-
-const MAX_TERMINAL_LINES = 40;
+import { TerminalSessionService } from '../../../core/services/terminal-session.service';
 
 @Component({
   selector: 'app-terminal-window',
@@ -25,7 +20,7 @@ const MAX_TERMINAL_LINES = 40;
         data-block="output"
         jpRetroScroll
         jpTerminalAutoscroll
-      >{{ screen() }}</pre>
+      >{{ terminal.outputText() }}</pre>
       <div class="prompt-line" data-block="input" jpTerminalPrompt>
         <span class="jp-terminal-prompt__prefix prompt">&gt;</span>
         <input
@@ -33,7 +28,7 @@ const MAX_TERMINAL_LINES = 40;
           class="jp-terminal-prompt__input cmd"
           autocomplete="off"
           spellcheck="false"
-          (keydown)="onInputKeydown($event, cmd)"
+          (keydown)="terminal.handleKeydown($event, cmd)"
           (keydown.enter)="onSubmit(cmd)"
         />
       </div>
@@ -77,45 +72,13 @@ const MAX_TERMINAL_LINES = 40;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TerminalWindowComponent {
-  private readonly sim = inject(SimulationBridgeService);
-  private readonly boot = inject(SystemBootService);
-  private readonly history = new TerminalCommandHistory();
-  readonly screen = signal('');
-
-  onInputKeydown(event: KeyboardEvent, input: HTMLInputElement): void {
-    this.history.handleKeydown(event, input);
-  }
+  readonly terminal = inject(TerminalSessionService);
 
   onSubmit(input: HTMLInputElement): void {
     const line = input.value.trim();
     if (!line) {
       return;
     }
-    this.history.push(line);
-    input.value = '';
-    this.exec(line);
-  }
-
-  private exec(line: string): void {
-    if (line.toLowerCase() === 'cls') {
-      this.screen.set('');
-      return;
-    }
-    if (line.toLowerCase() === 'system_hard_reboot') {
-      this.boot.promptHardReboot();
-      return;
-    }
-    if (line.toLowerCase() === 'help') {
-      this.appendScreen(`${line}\n${CLI_HELP_LINES.join('\n')}`);
-      return;
-    }
-    const result = this.sim.runTerminal(line);
-    this.appendScreen(`${line}\n${result}`);
-  }
-
-  private appendScreen(chunk: string): void {
-    const merged = (this.screen() ? `${this.screen()}\n` : '') + chunk;
-    const lines = merged.split('\n');
-    this.screen.set(lines.slice(-MAX_TERMINAL_LINES).join('\n'));
+    this.terminal.submitLine(line, input);
   }
 }
